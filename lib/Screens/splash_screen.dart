@@ -10,7 +10,6 @@ class SplashScreen extends StatefulWidget {
 
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
-
   late AnimationController _controller;
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
@@ -19,19 +18,22 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
 
-    _controller =
-        AnimationController(vsync: this, duration: const Duration(seconds: 2));
-
-    _scaleAnimation = Tween<double>(begin: 0.8, end: 1.1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
     );
+
+    _scaleAnimation = Tween<double>(
+      begin: 0.8,
+      end: 1.1,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
 
     _fadeAnimation = Tween<double>(begin: 0.3, end: 1).animate(_controller);
 
     _controller.repeat(reverse: true);
 
     Future.delayed(const Duration(seconds: 3), () {
-      Navigator.pushReplacementNamed(context, RouteNames.dashboard);
+      Navigator.pushReplacementNamed(context, RouteNames.onboarding);
     });
   }
 
@@ -60,10 +62,7 @@ class _SplashScreenState extends State<SplashScreen>
         width: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
-            colors: [
-              Color(0xFF081421),
-              Color(0xFF02060D),
-            ],
+            colors: [Color(0xFF081421), Color(0xFF02060D)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -71,7 +70,6 @@ class _SplashScreenState extends State<SplashScreen>
 
         child: Column(
           children: [
-
             const Spacer(),
 
             /// الزرار + الأنيميشن
@@ -82,7 +80,6 @@ class _SplashScreenState extends State<SplashScreen>
                 child: Stack(
                   alignment: Alignment.center,
                   children: [
-
                     Container(
                       width: 140,
                       height: 140,
@@ -103,10 +100,7 @@ class _SplashScreenState extends State<SplashScreen>
                       height: 120,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        border: Border.all(
-                          color: Colors.blueAccent,
-                          width: 2,
-                        ),
+                        border: Border.all(color: Colors.blueAccent, width: 2),
                       ),
                     ),
 
@@ -159,10 +153,7 @@ class _SplashScreenState extends State<SplashScreen>
 
             const Text(
               "STUDIO QUALITY CAPTURE",
-              style: TextStyle(
-                color: Colors.grey,
-                letterSpacing: 2,
-              ),
+              style: TextStyle(color: Colors.grey, letterSpacing: 2),
             ),
 
             const Spacer(),
@@ -170,11 +161,7 @@ class _SplashScreenState extends State<SplashScreen>
             /// النقاط
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                dot(true),
-                dot(false),
-                dot(false),
-              ],
+              children: [dot(true), dot(false), dot(false)],
             ),
 
             const SizedBox(height: 10),
