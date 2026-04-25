@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'home_tab.dart';
+import 'library_tab.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -18,10 +19,26 @@ class _DashboardState extends State<Dashboard> {
   static const Color _border = Color(0xFF1A1A28);
 
   final List<_NavItem> _items = const [
-    _NavItem(icon: Icons.home_outlined, activeIcon: Icons.home_rounded, label: 'Home'),
-    _NavItem(icon: Icons.video_library_outlined, activeIcon: Icons.video_library, label: 'Library'),
-    _NavItem(icon: Icons.bar_chart_outlined, activeIcon: Icons.bar_chart_rounded, label: 'Insights'),
-    _NavItem(icon: Icons.settings_outlined, activeIcon: Icons.settings_rounded, label: 'Settings'),
+    _NavItem(
+      icon: Icons.home_outlined,
+      activeIcon: Icons.home_rounded,
+      label: 'Home',
+    ),
+    _NavItem(
+      icon: Icons.video_library_outlined,
+      activeIcon: Icons.video_library,
+      label: 'Library',
+    ),
+    _NavItem(
+      icon: Icons.bar_chart_outlined,
+      activeIcon: Icons.bar_chart_rounded,
+      label: 'Insights',
+    ),
+    _NavItem(
+      icon: Icons.settings_outlined,
+      activeIcon: Icons.settings_rounded,
+      label: 'Settings',
+    ),
   ];
 
   Widget _buildPage(int index) {
@@ -29,7 +46,7 @@ class _DashboardState extends State<Dashboard> {
       case 0:
         return const HomeTab();
       case 1:
-        return const HomeTab();
+        return const LibraryTab();
       case 2:
         return const HomeTab();
       case 3:
@@ -52,9 +69,7 @@ class _DashboardState extends State<Dashboard> {
     return Container(
       decoration: const BoxDecoration(
         color: _navBg,
-        border: Border(
-          top: BorderSide(color: _border, width: 1),
-        ),
+        border: Border(top: BorderSide(color: _border, width: 1)),
       ),
       child: SafeArea(
         top: false,

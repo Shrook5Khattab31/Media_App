@@ -32,7 +32,7 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.repeat(reverse: true);
 
-    Future.delayed(const Duration(seconds: 3), () {
+    Future.delayed(const Duration(seconds: 5), () {
       Navigator.pushReplacementNamed(context, RouteNames.onboarding);
     });
   }

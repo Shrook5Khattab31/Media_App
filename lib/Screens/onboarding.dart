@@ -34,10 +34,10 @@ class OnboardingCapturePage extends StatelessWidget {
                   padding: const EdgeInsets.only(top: 8.0),
                   child: TextButton(
                     onPressed: () {
-                      Navigator.pushReplacementNamed(
+                      Navigator.of(
                         context,
-                        RouteNames.dashboard,
-                      );
+                        rootNavigator: true,
+                      ).pushReplacementNamed(RouteNames.dashboard);
                     },
                     child: const Text(
                       'Skip',
@@ -69,7 +69,7 @@ class OnboardingCapturePage extends StatelessWidget {
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(28),
                   child: Image.asset(
-                    './assets/images/recording_illustration.png',
+                    'assets/recording_illustration.png',
                     fit: BoxFit.contain, // or BoxFit.cover
                   ),
                 ),
