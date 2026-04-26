@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:network/Screens/onBoarding_2.dart';
 import 'package:network/Utils/routeNames.dart';
 
 class OnBoardingScreen extends StatelessWidget {
@@ -125,7 +126,9 @@ class OnboardingCapturePage extends StatelessWidget {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => OnboardingScreen2(),));
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF29ABE2),
                     foregroundColor: Colors.white,
@@ -161,116 +164,6 @@ class OnboardingCapturePage extends StatelessWidget {
   }
 }
 
-// Record icon inside the monitor
-class _RecordIcon extends StatelessWidget {
-  const _RecordIcon();
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        width: 60,
-        height: 60,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: const Color(0xFF3A8FB5), width: 3),
-        ),
-        child: Center(
-          child: Container(
-            width: 20,
-            height: 20,
-            decoration: const BoxDecoration(
-              shape: BoxShape.circle,
-              color: Color(0xFF3A8FB5),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-// Microphone illustration
-class _MicrophoneIcon extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Mic capsule
-        Container(
-          width: 24,
-          height: 40,
-          decoration: BoxDecoration(
-            color: const Color(0xFFB0BEC5),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: const Color(0xFF78909C), width: 1),
-          ),
-          child: const Center(
-            child: Icon(Icons.mic, color: Color(0xFF455A64), size: 18),
-          ),
-        ),
-        // Mic stand
-        Container(width: 2, height: 16, color: const Color(0xFF3A8FB5)),
-        // Base arc (simplified)
-        Container(
-          width: 36,
-          height: 6,
-          decoration: BoxDecoration(
-            color: Colors.transparent,
-            border: Border(
-              bottom: BorderSide(color: const Color(0xFF3A8FB5), width: 2),
-            ),
-            borderRadius: BorderRadius.circular(3),
-          ),
-        ),
-        // Stand base
-        Container(
-          width: 48,
-          height: 8,
-          decoration: BoxDecoration(
-            color: const Color(0xFF1A5B78),
-            borderRadius: BorderRadius.circular(4),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// App icon chip
-class _AppIcon extends StatelessWidget {
-  final Color color;
-  final IconData icon;
-  final Color iconColor;
-
-  const _AppIcon({
-    required this.color,
-    required this.icon,
-    required this.iconColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Icon(icon, color: iconColor, size: 22),
-    );
-  }
-}
-
-// Page indicator dot
 class _PageDot extends StatelessWidget {
   final bool isActive;
   const _PageDot({required this.isActive});

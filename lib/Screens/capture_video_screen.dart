@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:network/Screens/media_extraction_hub.dart';
+import 'package:network/Utils/routeNames.dart';
 
 class CaptureVideoScreen extends StatefulWidget {
   const CaptureVideoScreen({super.key});
@@ -351,22 +353,30 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
   }
 
   Widget _stopBtn() {
-    return Container(
-      width: 72,
-      height: 72,
-      decoration: BoxDecoration(
-        color: _red,
-        shape: BoxShape.circle,
-        boxShadow: [
-          BoxShadow(
-            color: _red.withOpacity(0.45),
-            blurRadius: 20,
-            spreadRadius: 2,
-          ),
-        ],
-        border: Border.all(color: Colors.white.withOpacity(0.25), width: 2),
+    return ElevatedButton(
+      style: ButtonStyle(
+        backgroundColor: WidgetStateColor.transparent
       ),
-      child: const Icon(Icons.stop_rounded, color: _white, size: 32),
+      onPressed: () {
+        Navigator.push(context, MaterialPageRoute(builder: (context) => ExtractionHubScreen(),));
+      },
+      child: Container(
+        width: 72,
+        height: 72,
+        decoration: BoxDecoration(
+          color: _red,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: _red.withOpacity(0.45),
+              blurRadius: 20,
+              spreadRadius: 2,
+            ),
+          ],
+          border: Border.all(color: Colors.white.withOpacity(0.25), width: 2),
+        ),
+        child: const Icon(Icons.stop_rounded, color: _white, size: 32),
+      ),
     );
   }
 

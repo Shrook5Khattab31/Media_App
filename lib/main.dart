@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:network/Screens/dashboard.dart';
-import 'package:network/Screens/splash_screen.dart';
+import 'Screens/dashboard.dart';
+import 'Screens/media_extraction_hub.dart';
+import 'Screens/splash_screen.dart';
 import 'Screens/onBoarding_2.dart';
-import 'package:network/Screens/onboarding.dart';
+import 'Screens/onboarding.dart';
 import 'Utils/routeNames.dart';
 
 void main() {
@@ -21,7 +22,8 @@ class MediaApp extends StatelessWidget {
         RouteNames.dashboard: (context) => Dashboard(),
         RouteNames.splashScreen: (context) => SplashScreen(),
         RouteNames.onboarding: (context) => OnBoardingScreen(),
-        RouteNames.onBoarding2:(context)=>OnboardingScreen2(),
+        RouteNames.onBoarding2: (context) =>OnboardingScreen2(),
+        RouteNames.extractionHub: (context) =>ExtractionHubScreen(),
       },
     );
   }

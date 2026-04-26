@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:network/Utils/routeNames.dart';
+
+import 'dashboard.dart';
 class OnboardingScreen2 extends StatefulWidget {
   const OnboardingScreen2({super.key});
 
@@ -291,7 +293,7 @@ class _OnboardingScreen2State extends State<OnboardingScreen2>
                     ),
                     child: ElevatedButton(
                       onPressed: () { //Todo: onboarding3
-                        Navigator.pushReplacementNamed(context, RouteNames.dashboard);
+                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Dashboard(),));
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.transparent,
