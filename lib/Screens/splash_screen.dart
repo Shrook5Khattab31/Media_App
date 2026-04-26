@@ -31,7 +31,7 @@ class _SplashScreenState extends State<SplashScreen>
     _controller.repeat(reverse: true);
 
     Future.delayed(const Duration(seconds: 3), () {
-      Navigator.pushReplacementNamed(context, RouteNames.dashboard);
+      Navigator.pushReplacementNamed(context, RouteNames.onBoarding2);
     });
   }
 
@@ -74,7 +74,6 @@ class _SplashScreenState extends State<SplashScreen>
 
             const Spacer(),
 
-            /// الزرار + الأنيميشن
             FadeTransition(
               opacity: _fadeAnimation,
               child: ScaleTransition(
@@ -167,7 +166,6 @@ class _SplashScreenState extends State<SplashScreen>
 
             const Spacer(),
 
-            /// النقاط
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
