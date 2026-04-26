@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:network/Screens/dashboard.dart';
 import 'package:network/Screens/splash_screen.dart';
+import 'package:network/Screens/onboarding.dart';
 import 'Utils/routeNames.dart';
 
 void main() {
@@ -16,8 +17,9 @@ class MediaApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       initialRoute: RouteNames.splashScreen,
       routes: {
-        RouteNames.dashboard:(context)=>Dashboard(),
-        RouteNames.splashScreen:(context)=>SplashScreen(),
+        RouteNames.dashboard: (context) => Dashboard(),
+        RouteNames.splashScreen: (context) => SplashScreen(),
+        RouteNames.onboarding: (context) => OnBoardingScreen(),
       },
     );
   }
