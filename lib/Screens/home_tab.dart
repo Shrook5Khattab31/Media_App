@@ -1,20 +1,14 @@
 import 'package:flutter/material.dart';
+import '../Utils/appColors.dart';
 import 'capture_video_screen.dart';
 
 class HomeTab extends StatelessWidget {
   const HomeTab({super.key});
 
-  static const Color _bg = Color(0xFF0A0A0F);
-  static const Color _card = Color(0xFF13131C);
-  static const Color _cyan = Color(0xFF00C2FF);
-  static const Color _cyanDark = Color(0xFF0F1C23);
-  static const Color _white = Color(0xFFFFFFFF);
-  static const Color _gray = Color(0xFF64748B);
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: AppColors.bgColor,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
@@ -44,7 +38,7 @@ class HomeTab extends StatelessWidget {
                 title: 'Code_Review_Session.mp4',
                 subtitle: Text(
                   'Yesterday • 18.2 MB',
-                  style: TextStyle(color: _gray, fontSize: 12),
+                  style: TextStyle(color: AppColors.grayColor, fontSize: 12),
                 ),
               ),
               const SizedBox(height: 24),
@@ -63,18 +57,18 @@ class HomeTab extends StatelessWidget {
           children: [
             CircleAvatar(
               radius: 22,
-              backgroundColor: _cyanDark,
-              child: const Icon(Icons.person, color: _cyan, size: 26),
+              backgroundColor: AppColors.darkCyanColor,
+              child: const Icon(Icons.person, color: AppColors.cyanColor, size: 26),
             ),
             const SizedBox(width: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Welcome back,',
-                    style: TextStyle(color: _gray, fontSize: 13)),
+                    style: TextStyle(color: AppColors.grayColor, fontSize: 13)),
                 const Text('Alex Rivera',
                     style: TextStyle(
-                        color: _white,
+                        color: AppColors.whiteColor,
                         fontSize: 17,
                         fontWeight: FontWeight.w700)),
               ],
@@ -85,11 +79,11 @@ class HomeTab extends StatelessWidget {
           width: 42,
           height: 42,
           decoration: BoxDecoration(
-            color: _card,
+            color: AppColors.secondBgColor,
             borderRadius: BorderRadius.circular(13),
           ),
           child: const Icon(Icons.notifications_outlined,
-              color: _white, size: 22),
+              color: AppColors.whiteColor, size: 22),
         ),
       ],
     );
@@ -98,7 +92,7 @@ class HomeTab extends StatelessWidget {
   Widget _sectionTitle(String text) {
     return Text(text,
         style: const TextStyle(
-            color: _white,
+            color: AppColors.whiteColor,
             fontSize: 20,
             fontWeight: FontWeight.w800,
             letterSpacing: -0.3));
@@ -146,7 +140,7 @@ class HomeTab extends StatelessWidget {
       child: Container(
         height: 126,
         decoration: BoxDecoration(
-          color: active ? _cyan : _card,
+          color: active ? AppColors.cyanColor : AppColors.secondBgColor,
           borderRadius: BorderRadius.circular(22),
         ),
         child: Column(
@@ -156,16 +150,16 @@ class HomeTab extends StatelessWidget {
               width: 52,
               height: 52,
               decoration: BoxDecoration(
-                color: active ? Colors.black.withOpacity(0.14) : _cyanDark,
+                color: active ? Colors.black.withOpacity(0.14) : AppColors.darkCyanColor,
                 borderRadius: BorderRadius.circular(15),
               ),
               child:
-              Icon(icon, color: active ? Colors.black : _cyan, size: 28),
+              Icon(icon, color: active ? Colors.black : AppColors.cyanColor, size: 28),
             ),
             const SizedBox(height: 11),
             Text(label,
                 style: TextStyle(
-                    color: active ? Colors.black : _white,
+                    color: active ? Colors.black : AppColors.whiteColor,
                     fontSize: 14,
                     fontWeight: FontWeight.w700)),
           ],
@@ -178,14 +172,14 @@ class HomeTab extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
       decoration: BoxDecoration(
-          color: _card, borderRadius: BorderRadius.circular(16)),
+          color: AppColors.secondBgColor, borderRadius: BorderRadius.circular(16)),
       child: Row(
         children: [
-          const Icon(Icons.cloud_upload_outlined, color: _cyan, size: 22),
+          const Icon(Icons.cloud_upload_outlined, color: AppColors.cyanColor, size: 22),
           const SizedBox(width: 10),
           const Text('Storage: 4.2GB / 10GB',
               style: TextStyle(
-                  color: _white, fontSize: 13, fontWeight: FontWeight.w500)),
+                  color: AppColors.whiteColor, fontSize: 13, fontWeight: FontWeight.w500)),
           const SizedBox(width: 12),
           Expanded(
             child: ClipRRect(
@@ -193,8 +187,8 @@ class HomeTab extends StatelessWidget {
               child: LinearProgressIndicator(
                 value: 0.42,
                 minHeight: 6,
-                backgroundColor: _gray.withOpacity(0.2),
-                valueColor: const AlwaysStoppedAnimation<Color>(_cyan),
+                backgroundColor: AppColors.grayColor.withOpacity(0.2),
+                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.cyanColor),
               ),
             ),
           ),
@@ -210,7 +204,7 @@ class HomeTab extends StatelessWidget {
         _sectionTitle('Recent Files'),
         const Text('See All',
             style: TextStyle(
-                color: _cyan, fontSize: 14, fontWeight: FontWeight.w600)),
+                color: AppColors.cyanColor, fontSize: 14, fontWeight: FontWeight.w600)),
       ],
     );
   }
@@ -218,7 +212,7 @@ class HomeTab extends StatelessWidget {
   Widget _videoCard() {
     return Container(
       decoration: BoxDecoration(
-          color: _card, borderRadius: BorderRadius.circular(20)),
+          color: AppColors.secondBgColor, borderRadius: BorderRadius.circular(20)),
       clipBehavior: Clip.hardEdge,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -242,7 +236,7 @@ class HomeTab extends StatelessWidget {
                       shape: BoxShape.circle,
                     ),
                     child:
-                    const Icon(Icons.play_arrow, color: _white, size: 30),
+                    const Icon(Icons.play_arrow, color: AppColors.whiteColor, size: 30),
                   ),
                 ),
               ),
@@ -258,7 +252,7 @@ class HomeTab extends StatelessWidget {
                   ),
                   child: const Text('04:12',
                       style: TextStyle(
-                          color: _white,
+                          color: AppColors.whiteColor,
                           fontSize: 12,
                           fontWeight: FontWeight.w600)),
                 ),
@@ -275,15 +269,15 @@ class HomeTab extends StatelessWidget {
                   children: [
                     const Text('Interview_Tech_01.mp4',
                         style: TextStyle(
-                            color: _white,
+                            color: AppColors.whiteColor,
                             fontSize: 15,
                             fontWeight: FontWeight.w700)),
                     const SizedBox(height: 4),
                     Text('Today • 10:24 AM • 24.8 MB',
-                        style: TextStyle(color: _gray, fontSize: 12)),
+                        style: TextStyle(color: AppColors.grayColor, fontSize: 12)),
                   ],
                 ),
-                Icon(Icons.more_vert, color: _gray),
+                Icon(Icons.more_vert, color: AppColors.grayColor),
               ],
             ),
           ),
@@ -300,7 +294,7 @@ class HomeTab extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       decoration: BoxDecoration(
-          color: _card, borderRadius: BorderRadius.circular(18)),
+          color: AppColors.secondBgColor, borderRadius: BorderRadius.circular(18)),
       child: Row(
         children: [
           leading,
@@ -311,7 +305,7 @@ class HomeTab extends StatelessWidget {
               children: [
                 Text(title,
                     style: const TextStyle(
-                        color: _white,
+                        color: AppColors.whiteColor,
                         fontSize: 15,
                         fontWeight: FontWeight.w700)),
                 const SizedBox(height: 5),
@@ -319,7 +313,7 @@ class HomeTab extends StatelessWidget {
               ],
             ),
           ),
-          Icon(Icons.more_vert, color: _gray),
+          Icon(Icons.more_vert, color: AppColors.grayColor),
         ],
       ),
     );
@@ -331,7 +325,7 @@ class HomeTab extends StatelessWidget {
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-          color: _cyanDark, borderRadius: BorderRadius.circular(14)),
+          color: AppColors.darkCyanColor, borderRadius: BorderRadius.circular(14)),
       child: Center(
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -342,7 +336,7 @@ class HomeTab extends StatelessWidget {
             height: h,
             margin: const EdgeInsets.symmetric(horizontal: 1),
             decoration: BoxDecoration(
-                color: _cyan,
+                color: AppColors.cyanColor,
                 borderRadius: BorderRadius.circular(2)),
           ))
               .toList(),
@@ -360,10 +354,10 @@ class HomeTab extends StatelessWidget {
           height: h,
           margin: const EdgeInsets.symmetric(horizontal: 1),
           decoration: BoxDecoration(
-              color: _cyan, borderRadius: BorderRadius.circular(2)),
+              color: AppColors.cyanColor, borderRadius: BorderRadius.circular(2)),
         )),
         const SizedBox(width: 8),
-        Text('02:45', style: TextStyle(color: _gray, fontSize: 12)),
+        Text('02:45', style: TextStyle(color: AppColors.grayColor, fontSize: 12)),
       ],
     );
   }
@@ -375,7 +369,7 @@ class HomeTab extends StatelessWidget {
       decoration: BoxDecoration(
           color: const Color(0xFF1A2030),
           borderRadius: BorderRadius.circular(14)),
-      child: Icon(icon, color: _cyan, size: 24),
+      child: Icon(icon, color: AppColors.cyanColor, size: 24),
     );
   }
 }
