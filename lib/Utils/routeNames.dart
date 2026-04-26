@@ -1,5 +1,6 @@
-class RouteNames{
-  static const String dashboard='Dashboard';
-  static const String splashScreen='Splash';
+class RouteNames {
+  static const String dashboard = 'Dashboard';
+  static const String splashScreen = 'Splash';
+  static const String onboarding = 'Onboarding';
   static const String onBoarding2= 'OnBoarding2';
 }
