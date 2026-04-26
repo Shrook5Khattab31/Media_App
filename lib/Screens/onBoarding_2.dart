@@ -1,14 +1,14 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:network/Utils/routeNames.dart';
-class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({super.key});
+class OnboardingScreen2 extends StatefulWidget {
+  const OnboardingScreen2({super.key});
 
   @override
-  State<OnboardingScreen> createState() => _OnboardingScreenState();
+  State<OnboardingScreen2> createState() => _OnboardingScreen2State();
 }
 
-class _OnboardingScreenState extends State<OnboardingScreen>
+class _OnboardingScreen2State extends State<OnboardingScreen2>
     with TickerProviderStateMixin {
   late AnimationController _waveController;
   late AnimationController _pulseController;
