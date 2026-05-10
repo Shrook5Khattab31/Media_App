@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:network/Screens/onboarding_3.dart';
+import 'package:network/Screens/performance.dart';
 import 'Screens/dashboard.dart';
 import 'Screens/media_extraction_hub.dart';
 import 'Screens/splash_screen.dart';
@@ -26,6 +27,7 @@ class MediaApp extends StatelessWidget {
         RouteNames.onBoarding2: (context) => OnboardingScreen2(),
         RouteNames.onBoarding3: (context) => OnboardingScreen_3(),
         RouteNames.extractionHub: (context) => ExtractionHubScreen(),
+        RouteNames.perform: (context) => PerformanceAnalyticsScreen(),
       },
     );
   }

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:network/Screens/dashboard.dart';
+import 'package:network/Utils/appAssets.dart';
 
 class OnboardingScreen_3 extends StatefulWidget {
   const OnboardingScreen_3({super.key});
@@ -35,7 +37,12 @@ class _OnboardingScreen_3State extends State<OnboardingScreen_3> {
                       ),
                     ),
                     TextButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(builder: (context) => Dashboard()),
+                        );
+                      },
                       child: const Text(
                         'Skip',
                         style: TextStyle(
@@ -60,10 +67,7 @@ class _OnboardingScreen_3State extends State<OnboardingScreen_3> {
                     child: SizedBox(
                       width: double.infinity,
                       height: 200,
-                      child: Image.asset(
-                        'assets/images/header.png',
-                        fit: BoxFit.cover,
-                      ),
+                      child: Image.asset(AppImages.header, fit: BoxFit.cover),
                     ),
                   ),
                 ),
@@ -154,7 +158,12 @@ class _OnboardingScreen_3State extends State<OnboardingScreen_3> {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => Dashboard()),
+                    );
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF3A8DFF),
                     foregroundColor: Colors.white,
@@ -214,7 +223,10 @@ class _FeatureCard extends StatelessWidget {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(16),
-          child: SizedBox(height: 110, child: backgroundWidget),
+          child: AspectRatio(
+            aspectRatio: 16 / 9, // makes it wider
+            child: backgroundWidget,
+          ),
         ),
         const SizedBox(height: 10),
         Text(
@@ -269,7 +281,7 @@ class _PlaylistThumbnail extends StatelessWidget {
             bottom: 10,
             right: 10,
             child: Container(
-              width: 36,
+              width: 50,
               height: 36,
               decoration: BoxDecoration(
                 color: const Color(0xFF4FC3F7).withOpacity(0.15),
@@ -335,18 +347,18 @@ class _MediaPlayerThumbnail extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.end,
               children: const [
-                _WaveBar(height: 20),
-                _WaveBar(height: 35),
-                _WaveBar(height: 28),
-                _WaveBar(height: 45),
-                _WaveBar(height: 32),
-                _WaveBar(height: 50, active: true),
-                _WaveBar(height: 38),
-                _WaveBar(height: 25),
-                _WaveBar(height: 42),
-                _WaveBar(height: 18),
-                _WaveBar(height: 30),
-                _WaveBar(height: 22),
+                Expanded(child: _WaveBar(height: 20)),
+                Expanded(child: _WaveBar(height: 35)),
+                Expanded(child: _WaveBar(height: 28)),
+                Expanded(child: _WaveBar(height: 45)),
+                Expanded(child: _WaveBar(height: 32)),
+                Expanded(child: _WaveBar(height: 50, active: true)),
+                Expanded(child: _WaveBar(height: 38)),
+                Expanded(child: _WaveBar(height: 25)),
+                Expanded(child: _WaveBar(height: 42)),
+                Expanded(child: _WaveBar(height: 18)),
+                Expanded(child: _WaveBar(height: 30)),
+                Expanded(child: _WaveBar(height: 22)),
               ],
             ),
           ),

@@ -1,7 +1,8 @@
+import 'dart:io';
+import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:network/Screens/media_extraction_hub.dart';
-import 'package:network/Utils/routeNames.dart';
 
 class CaptureVideoScreen extends StatefulWidget {
   const CaptureVideoScreen({super.key});
@@ -19,9 +20,23 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
   static const Color _dark = Color(0xFF1A1A1A);
   static const Color _cardBg = Color(0xCC1C1C2E);
 
+  // ── Camera ──────────────────────────────────────────────────────────────────
+  CameraController? _cameraController;
+  List<CameraDescription> _cameras = [];
+  bool _isCameraInitialized = false;
+  bool _isRecording = false;
+  bool _isPaused = false;
+  int _selectedCameraIndex = 0;
+
+  // ── Zoom ─────────────────────────────────────────────────────────────────────
   int _selectedZoom = 1; // 0 = 0.5x, 1 = 1x, 2 = 2x
+  final List<double> _zoomLevels = [0.5, 1.0, 2.0];
+
+  // ── Timer ───────────────────────────────────────────────────────────────────
   late AnimationController _blinkController;
   late Animation<double> _blinkAnimation;
+  final Stopwatch _stopwatch = Stopwatch();
+  String _elapsed = '00 : 00 : 00';
 
   @override
   void initState() {
@@ -31,19 +46,166 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
     _blinkController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
-    )..repeat(reverse: true);
-
+    );
     _blinkAnimation = Tween<double>(begin: 1.0, end: 0.2).animate(
       CurvedAnimation(parent: _blinkController, curve: Curves.easeInOut),
     );
+
+    _initCamera();
+  }
+
+  Future<void> _initCamera() async {
+    _cameras = await availableCameras();
+    if (_cameras.isEmpty) return;
+    await _setupCamera(_cameras[_selectedCameraIndex]);
+  }
+
+  Future<void> _setupCamera(CameraDescription description) async {
+    final controller = CameraController(
+      description,
+      ResolutionPreset.high,
+      enableAudio: true,
+      imageFormatGroup: ImageFormatGroup.jpeg,
+    );
+
+    _cameraController = controller;
+    try {
+      await controller.initialize();
+      // Apply initial zoom
+      await _applyZoom(_zoomLevels[_selectedZoom]);
+      if (mounted) setState(() => _isCameraInitialized = true);
+    } catch (e) {
+      debugPrint('Camera init error: $e');
+    }
+  }
+
+  Future<void> _applyZoom(double zoom) async {
+    if (_cameraController == null || !_cameraController!.value.isInitialized)
+      return;
+    try {
+      final minZoom = await _cameraController!.getMinZoomLevel();
+      final maxZoom = await _cameraController!.getMaxZoomLevel();
+      final clamped = zoom.clamp(minZoom, maxZoom);
+      await _cameraController!.setZoomLevel(clamped);
+    } catch (_) {}
+  }
+
+  Future<void> _switchCamera() async {
+    if (_cameras.length < 2) return;
+    if (_isRecording) return; // can't switch while recording
+    _selectedCameraIndex = (_selectedCameraIndex + 1) % _cameras.length;
+    setState(() => _isCameraInitialized = false);
+    await _cameraController?.dispose();
+    await _setupCamera(_cameras[_selectedCameraIndex]);
+  }
+
+  // ── Recording ────────────────────────────────────────────────────────────────
+
+  Future<void> _startRecording() async {
+    if (_cameraController == null || !_cameraController!.value.isInitialized)
+      return;
+    try {
+      await _cameraController!.startVideoRecording();
+      _stopwatch.reset();
+      _stopwatch.start();
+      _blinkController.repeat(reverse: true);
+      _updateTimer();
+      setState(() {
+        _isRecording = true;
+        _isPaused = false;
+      });
+    } catch (e) {
+      debugPrint('Start recording error: $e');
+    }
+  }
+
+  Future<void> _pauseResumeRecording() async {
+    if (_cameraController == null || !_isRecording) return;
+    try {
+      if (_isPaused) {
+        await _cameraController!.resumeVideoRecording();
+        _stopwatch.start();
+        _blinkController.repeat(reverse: true);
+        setState(() => _isPaused = false);
+      } else {
+        await _cameraController!.pauseVideoRecording();
+        _stopwatch.stop();
+        _blinkController.stop();
+        setState(() => _isPaused = true);
+      }
+    } catch (e) {
+      debugPrint('Pause/resume error: $e');
+    }
+  }
+
+  Future<void> _stopRecording() async {
+    if (_cameraController == null || !_isRecording) return;
+    try {
+      final file = await _cameraController!.stopVideoRecording();
+      _stopwatch.stop();
+      _blinkController.stop();
+      setState(() {
+        _isRecording = false;
+        _isPaused = false;
+        _elapsed = '00 : 00 : 00';
+      });
+
+      if (mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ExtractionHubScreen(videoPath: file.path),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Stop recording error: $e');
+    }
+  }
+
+  void _updateTimer() {
+    Future.doWhile(() async {
+      await Future.delayed(const Duration(seconds: 1));
+      if (!mounted || !_isRecording) return false;
+      if (!_isPaused) {
+        final s = _stopwatch.elapsed;
+        final h = s.inHours.toString().padLeft(2, '0');
+        final m = (s.inMinutes % 60).toString().padLeft(2, '0');
+        final sec = (s.inSeconds % 60).toString().padLeft(2, '0');
+        setState(() => _elapsed = '$h : $m : $sec');
+      }
+      return _isRecording;
+    });
+  }
+
+  Future<void> _takeSnapshot() async {
+    if (_cameraController == null || !_cameraController!.value.isInitialized)
+      return;
+    try {
+      await _cameraController!.takePicture();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Snapshot saved!'),
+            duration: Duration(seconds: 1),
+            backgroundColor: Color(0xFF3D3DF5),
+          ),
+        );
+      }
+    } catch (e) {
+      debugPrint('Snapshot error: $e');
+    }
   }
 
   @override
   void dispose() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     _blinkController.dispose();
+    _cameraController?.dispose();
     super.dispose();
   }
+
+  // ── Build ─────────────────────────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
@@ -52,37 +214,25 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
       body: Stack(
         fit: StackFit.expand,
         children: [
-          // ── Camera preview placeholder ──────────────────────────────────────
           _cameraPreview(),
-
-          // ── Top bar ─────────────────────────────────────────────────────────
           Positioned(top: 52, left: 16, right: 16, child: _topBar()),
-
-          // ── Right side controls ─────────────────────────────────────────────
-          Positioned(right: 0, top: 0, bottom: 0, child: _sideControls()),
-
-          // ── Stream info card ────────────────────────────────────────────────
-          Positioned(bottom: 210, left: 16, child: _streamInfoCard()),
-
-          // ── Bottom controls ─────────────────────────────────────────────────
           Positioned(bottom: 0, left: 0, right: 0, child: _bottomControls()),
         ],
       ),
     );
   }
 
-  // ── Camera preview ─────────────────────────────────────────────────────────
-
   Widget _cameraPreview() {
-    return Container(
-      color: const Color(0xFF0A0F1A),
-      child: const Center(
-        child: Icon(Icons.landscape, color: Color(0xFF111E2A), size: 200),
-      ),
-    );
+    if (!_isCameraInitialized || _cameraController == null) {
+      return Container(
+        color: const Color(0xFF0A0F1A),
+        child: const Center(
+          child: CircularProgressIndicator(color: Color(0xFF3D3DF5)),
+        ),
+      );
+    }
+    return CameraPreview(_cameraController!);
   }
-
-  // ── Top bar ────────────────────────────────────────────────────────────────
 
   Widget _topBar() {
     return Container(
@@ -94,32 +244,34 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
       ),
       child: Row(
         children: [
-          // Blinking red dot
-          FadeTransition(
-            opacity: _blinkAnimation,
-            child: Container(
-              width: 10,
-              height: 10,
-              decoration: const BoxDecoration(
-                color: _red,
-                shape: BoxShape.circle,
+          // Blinking dot — only shown while recording
+          if (_isRecording) ...[
+            FadeTransition(
+              opacity: _blinkAnimation,
+              child: Container(
+                width: 10,
+                height: 10,
+                decoration: const BoxDecoration(
+                  color: _red,
+                  shape: BoxShape.circle,
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            'REC',
-            style: TextStyle(
-              color: _red,
-              fontSize: 13,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 1.2,
+            const SizedBox(width: 8),
+            Text(
+              _isPaused ? 'PAUSED' : 'REC',
+              style: TextStyle(
+                color: _isPaused ? Colors.orange : _red,
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.2,
+              ),
             ),
-          ),
-          const SizedBox(width: 12),
-          const Text(
-            '00 : 12 : 45',
-            style: TextStyle(
+            const SizedBox(width: 12),
+          ],
+          Text(
+            _elapsed,
+            style: const TextStyle(
               color: _white,
               fontSize: 22,
               fontWeight: FontWeight.w700,
@@ -127,170 +279,31 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
             ),
           ),
           const Spacer(),
-          // Battery indicator
-          Container(
-            padding:
-                const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.5),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: Colors.white.withOpacity(0.15)),
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 22,
-                  height: 11,
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                        color: Colors.white.withOpacity(0.5), width: 1.2),
-                    borderRadius: BorderRadius.circular(3),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(1.5),
-                    child: FractionallySizedBox(
-                      alignment: Alignment.centerLeft,
-                      widthFactor: 0.84,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF4CAF50),
-                          borderRadius: BorderRadius.circular(1.5),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 6),
-                const Text(
-                  '84%',
-                  style: TextStyle(
-                    color: _white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // ── Side controls ──────────────────────────────────────────────────────────
-
-  Widget _sideControls() {
-    return Center(
-      child: Container(
-        width: 62,
-        padding: const EdgeInsets.symmetric(vertical: 12),
-        margin: const EdgeInsets.only(right: 0),
-        decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.6),
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(22),
-            bottomLeft: Radius.circular(22),
-          ),
-          border: Border.all(color: Colors.white.withOpacity(0.08)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _sideBtn(Icons.flash_on_outlined, active: false),
-            const SizedBox(height: 18),
-            _sideBtn(Icons.cameraswitch_outlined, active: false),
-            const SizedBox(height: 18),
-            _sideBtnActive(), // grid / active blue
-            const SizedBox(height: 18),
-            _sideBtn(Icons.tune, active: false),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _sideBtn(IconData icon, {required bool active}) {
-    return SizedBox(
-      width: 42,
-      height: 42,
-      child: Icon(icon, color: Colors.white.withOpacity(0.85), size: 22),
-    );
-  }
-
-  Widget _sideBtnActive() {
-    return Container(
-      width: 42,
-      height: 42,
-      decoration: const BoxDecoration(
-        color: _blue,
-        shape: BoxShape.circle,
-      ),
-      child: const Icon(Icons.grid_on_rounded, color: _white, size: 22),
-    );
-  }
-
-  // ── Stream info card ───────────────────────────────────────────────────────
-
-  Widget _streamInfoCard() {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(14, 10, 20, 14),
-      decoration: BoxDecoration(
-        color: _cardBg,
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white.withOpacity(0.08)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.info_outline_rounded, color: _blue, size: 15),
-              const SizedBox(width: 6),
-              Text(
-                'ACTIVE STREAM',
-                style: TextStyle(
-                  color: _blue,
-                  fontSize: 11,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 1.1,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 6),
-          const Text(
-            '1080p | 60fps | HEVC',
-            style: TextStyle(
-              color: _white,
-              fontSize: 19,
-              fontWeight: FontWeight.w700,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Container(
-            width: 110,
-            height: 3,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(2),
-            ),
-            child: FractionallySizedBox(
-              alignment: Alignment.centerLeft,
-              widthFactor: 0.55,
+          // Back button (when not recording)
+          if (!_isRecording)
+            GestureDetector(
+              onTap: () => Navigator.pop(context),
               child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
-                  color: _blue,
-                  borderRadius: BorderRadius.circular(2),
+                  color: Colors.black.withOpacity(0.5),
+                  borderRadius: BorderRadius.circular(10),
+                  border: Border.all(color: Colors.white.withOpacity(0.15)),
+                ),
+                child: const Icon(
+                  Icons.arrow_back_ios_new,
+                  color: _white,
+                  size: 16,
                 ),
               ),
             ),
-          ),
         ],
       ),
     );
   }
-
-  // ── Bottom controls ────────────────────────────────────────────────────────
 
   Widget _bottomControls() {
     return Container(
@@ -299,31 +312,44 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
         gradient: LinearGradient(
           begin: Alignment.bottomCenter,
           end: Alignment.topCenter,
-          colors: [
-            Colors.black.withOpacity(0.85),
-            Colors.transparent,
-          ],
+          colors: [Colors.black.withOpacity(0.85), Colors.transparent],
         ),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Pause | Stop | Snapshot
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _circleBtn(Icons.pause_rounded, size: 52, bg: _dark),
+              // Pause / Resume
+              GestureDetector(
+                onTap: _isRecording ? _pauseResumeRecording : null,
+                child: _circleBtn(
+                  _isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
+                  size: 52,
+                  bg: _isRecording ? _dark : Colors.white.withOpacity(0.1),
+                ),
+              ),
               const SizedBox(width: 24),
-              _stopBtn(),
+              // Record / Stop
+              _isRecording ? _stopBtn() : _recordBtn(),
               const SizedBox(width: 24),
-              _circleBtn(Icons.camera_alt_outlined, size: 52, bg: _dark),
+              // Snapshot + switch camera
+              GestureDetector(
+                onTap: _isRecording ? _takeSnapshot : _switchCamera,
+                child: _circleBtn(
+                  _isRecording
+                      ? Icons.camera_alt_outlined
+                      : Icons.cameraswitch_outlined,
+                  size: 52,
+                  bg: _dark,
+                ),
+              ),
             ],
           ),
           const SizedBox(height: 22),
-          // Zoom selector
           _zoomSelector(),
           const SizedBox(height: 16),
-          // Home indicator line
           Center(
             child: Container(
               width: 120,
@@ -339,27 +365,41 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
     );
   }
 
-  Widget _circleBtn(IconData icon,
-      {required double size, required Color bg}) {
+  Widget _circleBtn(IconData icon, {required double size, required Color bg}) {
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        color: bg,
-        shape: BoxShape.circle,
-      ),
+      decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
       child: Icon(icon, color: _white, size: size * 0.45),
     );
   }
 
-  Widget _stopBtn() {
-    return ElevatedButton(
-      style: ButtonStyle(
-        backgroundColor: WidgetStateColor.transparent
+  Widget _recordBtn() {
+    return GestureDetector(
+      onTap: _startRecording,
+      child: Container(
+        width: 72,
+        height: 72,
+        decoration: BoxDecoration(
+          color: _red,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: _red.withOpacity(0.45),
+              blurRadius: 20,
+              spreadRadius: 2,
+            ),
+          ],
+          border: Border.all(color: Colors.white.withOpacity(0.25), width: 2),
+        ),
+        child: const Icon(Icons.videocam, color: _white, size: 32),
       ),
-      onPressed: () {
-        Navigator.push(context, MaterialPageRoute(builder: (context) => ExtractionHubScreen(),));
-      },
+    );
+  }
+
+  Widget _stopBtn() {
+    return GestureDetector(
+      onTap: _stopRecording,
       child: Container(
         width: 72,
         height: 72,
@@ -387,19 +427,19 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
       children: List.generate(zooms.length, (i) {
         final isSelected = _selectedZoom == i;
         return GestureDetector(
-          onTap: () => setState(() => _selectedZoom = i),
+          onTap: () async {
+            setState(() => _selectedZoom = i);
+            await _applyZoom(_zoomLevels[i]);
+          },
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             margin: const EdgeInsets.symmetric(horizontal: 6),
-            padding:
-                const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
               color: isSelected ? _blue : Colors.black.withOpacity(0.5),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: isSelected
-                    ? _blue
-                    : Colors.white.withOpacity(0.15),
+                color: isSelected ? _blue : Colors.white.withOpacity(0.15),
               ),
             ),
             child: Text(
@@ -407,8 +447,7 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
               style: TextStyle(
                 color: _white,
                 fontSize: 13,
-                fontWeight:
-                    isSelected ? FontWeight.w700 : FontWeight.w400,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
               ),
             ),
           ),

@@ -15,8 +15,7 @@ class _LibraryTabState extends State<LibraryTab> {
   static const Color _surface = Color(0xFF0E0E16);
 
   int _selectedTab = 0;
-  final List<String> _tabs = ['All', 'Video', 'Audio'];
-
+  final List<String> _tabs = ['Video'];
   final List<_MediaItem> _items = const [
     _MediaItem(
       name: 'Interview_01.mp4',
@@ -66,9 +65,7 @@ class _LibraryTabState extends State<LibraryTab> {
   ];
 
   List<_MediaItem> get _filteredItems {
-    if (_selectedTab == 0) return _items;
-    if (_selectedTab == 1) return _items.where((e) => !e.isAudio).toList();
-    return _items.where((e) => e.isAudio).toList();
+    return _items.where((e) => !e.isAudio).toList();
   }
 
   @override

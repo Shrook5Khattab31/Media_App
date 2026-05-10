@@ -20,18 +20,10 @@ class HomeTab extends StatelessWidget {
               _sectionTitle('Start Recording'),
               const SizedBox(height: 14),
               _recordingButtons(context),
-              const SizedBox(height: 14),
-              _storageBar(),
               const SizedBox(height: 30),
               _recentFilesHeader(),
               const SizedBox(height: 14),
               _videoCard(),
-              const SizedBox(height: 12),
-              _fileRow(
-                leading: _waveIconBox(),
-                title: 'Voice_Memo_004.wav',
-                subtitle: _waveformRow(),
-              ),
               const SizedBox(height: 12),
               _fileRow(
                 leading: _thumbBox(Icons.code_outlined),
@@ -58,19 +50,28 @@ class HomeTab extends StatelessWidget {
             CircleAvatar(
               radius: 22,
               backgroundColor: AppColors.darkCyanColor,
-              child: const Icon(Icons.person, color: AppColors.cyanColor, size: 26),
+              child: const Icon(
+                Icons.person,
+                color: AppColors.cyanColor,
+                size: 26,
+              ),
             ),
             const SizedBox(width: 12),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Welcome back,',
-                    style: TextStyle(color: AppColors.grayColor, fontSize: 13)),
-                const Text('Alex Rivera',
-                    style: TextStyle(
-                        color: AppColors.whiteColor,
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700)),
+                Text(
+                  'Welcome back,',
+                  style: TextStyle(color: AppColors.grayColor, fontSize: 13),
+                ),
+                const Text(
+                  'Alex Rivera',
+                  style: TextStyle(
+                    color: AppColors.whiteColor,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
               ],
             ),
           ],
@@ -82,20 +83,26 @@ class HomeTab extends StatelessWidget {
             color: AppColors.secondBgColor,
             borderRadius: BorderRadius.circular(13),
           ),
-          child: const Icon(Icons.notifications_outlined,
-              color: AppColors.whiteColor, size: 22),
+          child: const Icon(
+            Icons.notifications_outlined,
+            color: AppColors.whiteColor,
+            size: 22,
+          ),
         ),
       ],
     );
   }
 
   Widget _sectionTitle(String text) {
-    return Text(text,
-        style: const TextStyle(
-            color: AppColors.whiteColor,
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
-            letterSpacing: -0.3));
+    return Text(
+      text,
+      style: const TextStyle(
+        color: AppColors.whiteColor,
+        fontSize: 20,
+        fontWeight: FontWeight.w800,
+        letterSpacing: -0.3,
+      ),
+    );
   }
 
   Widget _recordingButtons(BuildContext context) {
@@ -109,8 +116,7 @@ class HomeTab extends StatelessWidget {
             active: true,
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(
-                  builder: (_) => const CaptureVideoScreen()),
+              MaterialPageRoute(builder: (_) => const CaptureVideoScreen()),
             ),
           ),
         ),
@@ -129,12 +135,12 @@ class HomeTab extends StatelessWidget {
   }
 
   Widget _actionBtn(
-      BuildContext context,
-      IconData icon,
-      String label, {
-        required bool active,
-        required VoidCallback onTap,
-      }) {
+    BuildContext context,
+    IconData icon,
+    String label, {
+    required bool active,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -150,18 +156,26 @@ class HomeTab extends StatelessWidget {
               width: 52,
               height: 52,
               decoration: BoxDecoration(
-                color: active ? Colors.black.withOpacity(0.14) : AppColors.darkCyanColor,
+                color: active
+                    ? Colors.black.withOpacity(0.14)
+                    : AppColors.darkCyanColor,
                 borderRadius: BorderRadius.circular(15),
               ),
-              child:
-              Icon(icon, color: active ? Colors.black : AppColors.cyanColor, size: 28),
+              child: Icon(
+                icon,
+                color: active ? Colors.black : AppColors.cyanColor,
+                size: 28,
+              ),
             ),
             const SizedBox(height: 11),
-            Text(label,
-                style: TextStyle(
-                    color: active ? Colors.black : AppColors.whiteColor,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700)),
+            Text(
+              label,
+              style: TextStyle(
+                color: active ? Colors.black : AppColors.whiteColor,
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
           ],
         ),
       ),
@@ -172,14 +186,25 @@ class HomeTab extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
       decoration: BoxDecoration(
-          color: AppColors.secondBgColor, borderRadius: BorderRadius.circular(16)),
+        color: AppColors.secondBgColor,
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Row(
         children: [
-          const Icon(Icons.cloud_upload_outlined, color: AppColors.cyanColor, size: 22),
+          const Icon(
+            Icons.cloud_upload_outlined,
+            color: AppColors.cyanColor,
+            size: 22,
+          ),
           const SizedBox(width: 10),
-          const Text('Storage: 4.2GB / 10GB',
-              style: TextStyle(
-                  color: AppColors.whiteColor, fontSize: 13, fontWeight: FontWeight.w500)),
+          const Text(
+            'Storage: 4.2GB / 10GB',
+            style: TextStyle(
+              color: AppColors.whiteColor,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: ClipRRect(
@@ -188,7 +213,9 @@ class HomeTab extends StatelessWidget {
                 value: 0.42,
                 minHeight: 6,
                 backgroundColor: AppColors.grayColor.withOpacity(0.2),
-                valueColor: const AlwaysStoppedAnimation<Color>(AppColors.cyanColor),
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                  AppColors.cyanColor,
+                ),
               ),
             ),
           ),
@@ -202,9 +229,14 @@ class HomeTab extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         _sectionTitle('Recent Files'),
-        const Text('See All',
-            style: TextStyle(
-                color: AppColors.cyanColor, fontSize: 14, fontWeight: FontWeight.w600)),
+        const Text(
+          'See All',
+          style: TextStyle(
+            color: AppColors.cyanColor,
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ],
     );
   }
@@ -212,7 +244,9 @@ class HomeTab extends StatelessWidget {
   Widget _videoCard() {
     return Container(
       decoration: BoxDecoration(
-          color: AppColors.secondBgColor, borderRadius: BorderRadius.circular(20)),
+        color: AppColors.secondBgColor,
+        borderRadius: BorderRadius.circular(20),
+      ),
       clipBehavior: Clip.hardEdge,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -223,8 +257,11 @@ class HomeTab extends StatelessWidget {
                 height: 185,
                 width: double.infinity,
                 color: const Color(0xFF111E18),
-                child: const Icon(Icons.landscape,
-                    color: Color(0xFF1E3828), size: 90),
+                child: const Icon(
+                  Icons.landscape,
+                  color: Color(0xFF1E3828),
+                  size: 90,
+                ),
               ),
               Positioned.fill(
                 child: Center(
@@ -235,8 +272,11 @@ class HomeTab extends StatelessWidget {
                       color: Colors.black.withOpacity(0.55),
                       shape: BoxShape.circle,
                     ),
-                    child:
-                    const Icon(Icons.play_arrow, color: AppColors.whiteColor, size: 30),
+                    child: const Icon(
+                      Icons.play_arrow,
+                      color: AppColors.whiteColor,
+                      size: 30,
+                    ),
                   ),
                 ),
               ),
@@ -245,16 +285,21 @@ class HomeTab extends StatelessWidget {
                 right: 12,
                 child: Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 8, vertical: 4),
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.black.withOpacity(0.65),
                     borderRadius: BorderRadius.circular(7),
                   ),
-                  child: const Text('04:12',
-                      style: TextStyle(
-                          color: AppColors.whiteColor,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600)),
+                  child: const Text(
+                    '04:12',
+                    style: TextStyle(
+                      color: AppColors.whiteColor,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -267,14 +312,22 @@ class HomeTab extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('Interview_Tech_01.mp4',
-                        style: TextStyle(
-                            color: AppColors.whiteColor,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700)),
+                    const Text(
+                      'Interview_Tech_01.mp4',
+                      style: TextStyle(
+                        color: AppColors.whiteColor,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
                     const SizedBox(height: 4),
-                    Text('Today • 10:24 AM • 24.8 MB',
-                        style: TextStyle(color: AppColors.grayColor, fontSize: 12)),
+                    Text(
+                      'Today • 10:24 AM • 24.8 MB',
+                      style: TextStyle(
+                        color: AppColors.grayColor,
+                        fontSize: 12,
+                      ),
+                    ),
                   ],
                 ),
                 Icon(Icons.more_vert, color: AppColors.grayColor),
@@ -294,7 +347,9 @@ class HomeTab extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
       decoration: BoxDecoration(
-          color: AppColors.secondBgColor, borderRadius: BorderRadius.circular(18)),
+        color: AppColors.secondBgColor,
+        borderRadius: BorderRadius.circular(18),
+      ),
       child: Row(
         children: [
           leading,
@@ -303,11 +358,14 @@ class HomeTab extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title,
-                    style: const TextStyle(
-                        color: AppColors.whiteColor,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700)),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: AppColors.whiteColor,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
                 const SizedBox(height: 5),
                 subtitle,
               ],
@@ -319,56 +377,14 @@ class HomeTab extends StatelessWidget {
     );
   }
 
-  Widget _waveIconBox() {
-    final bars = [7.0, 13.0, 9.0, 17.0, 11.0, 15.0, 9.0, 7.0];
-    return Container(
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-          color: AppColors.darkCyanColor, borderRadius: BorderRadius.circular(14)),
-      child: Center(
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: bars
-              .map((h) => Container(
-            width: 3,
-            height: h,
-            margin: const EdgeInsets.symmetric(horizontal: 1),
-            decoration: BoxDecoration(
-                color: AppColors.cyanColor,
-                borderRadius: BorderRadius.circular(2)),
-          ))
-              .toList(),
-        ),
-      ),
-    );
-  }
-
-  Widget _waveformRow() {
-    final bars = [5.0, 9.0, 12.0, 7.0, 14.0, 8.0, 5.0, 11.0, 7.0, 12.0];
-    return Row(
-      children: [
-        ...bars.map((h) => Container(
-          width: 3,
-          height: h,
-          margin: const EdgeInsets.symmetric(horizontal: 1),
-          decoration: BoxDecoration(
-              color: AppColors.cyanColor, borderRadius: BorderRadius.circular(2)),
-        )),
-        const SizedBox(width: 8),
-        Text('02:45', style: TextStyle(color: AppColors.grayColor, fontSize: 12)),
-      ],
-    );
-  }
-
   Widget _thumbBox(IconData icon) {
     return Container(
       width: 48,
       height: 48,
       decoration: BoxDecoration(
-          color: const Color(0xFF1A2030),
-          borderRadius: BorderRadius.circular(14)),
+        color: const Color(0xFF1A2030),
+        borderRadius: BorderRadius.circular(14),
+      ),
       child: Icon(icon, color: AppColors.cyanColor, size: 24),
     );
   }

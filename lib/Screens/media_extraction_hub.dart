@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 class ExtractionHubScreen extends StatefulWidget {
-  const ExtractionHubScreen({super.key});
+  final String? videoPath;
+  const ExtractionHubScreen({super.key, this.videoPath});
   @override
   State<ExtractionHubScreen> createState() => _ExtractionHubScreenState();
 }
@@ -44,7 +45,7 @@ class _ExtractionHubScreenState extends State<ExtractionHubScreen>
       // ── Floating Save Button ──────────────────────────────────────────────
       bottomNavigationBar: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(30),
+          padding: const EdgeInsets.fromLTRB(16, 10, 16, 28),
           child: SizedBox(
             height: 54,
             child: ElevatedButton.icon(
@@ -93,6 +94,12 @@ class _ExtractionHubScreenState extends State<ExtractionHubScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _summaryCard(),
+                    const SizedBox(height: 12),
+                    _noiseCard(),
+                    const SizedBox(height: 20),
+                    _label('Extract Audio'),
+                    const SizedBox(height: 10),
+                    _audioCard(),
                     const SizedBox(height: 20),
                     _label('Export Video'),
                     const SizedBox(height: 10),

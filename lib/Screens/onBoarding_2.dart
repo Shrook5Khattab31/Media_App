@@ -1,8 +1,10 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:network/Screens/onboarding_3.dart';
 import 'package:network/Utils/routeNames.dart';
 
 import 'dashboard.dart';
+
 class OnboardingScreen2 extends StatefulWidget {
   const OnboardingScreen2({super.key});
 
@@ -43,9 +45,10 @@ class _OnboardingScreen2State extends State<OnboardingScreen2>
       curve: Curves.easeOut,
     );
 
-    _slideAnimation = Tween<double>(begin: 30, end: 0).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeOut),
-    );
+    _slideAnimation = Tween<double>(
+      begin: 30,
+      end: 0,
+    ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeOut));
 
     _fadeController.forward();
   }
@@ -74,13 +77,19 @@ class _OnboardingScreen2State extends State<OnboardingScreen2>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new,
-                          color: Colors.white70, size: 18),
+                      icon: const Icon(
+                        Icons.arrow_back_ios_new,
+                        color: Colors.white70,
+                        size: 18,
+                      ),
                       onPressed: () {},
                     ),
                     TextButton(
                       onPressed: () {
-                        Navigator.pushReplacementNamed(context, RouteNames.dashboard);
+                        Navigator.pushReplacementNamed(
+                          context,
+                          RouteNames.dashboard,
+                        );
                       },
                       child: const Text(
                         'Skip',
@@ -117,10 +126,7 @@ class _OnboardingScreen2State extends State<OnboardingScreen2>
                     gradient: const LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xFF161D27),
-                        Color(0xFF0F151E),
-                      ],
+                      colors: [Color(0xFF161D27), Color(0xFF0F151E)],
                     ),
                     border: Border.all(
                       color: Colors.white.withOpacity(0.06),
@@ -170,20 +176,17 @@ class _OnboardingScreen2State extends State<OnboardingScreen2>
                               gradient: const LinearGradient(
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
-                                colors: [
-                                  Color(0xFF1E3A4A),
-                                  Color(0xFF132530),
-                                ],
+                                colors: [Color(0xFF1E3A4A), Color(0xFF132530)],
                               ),
                               border: Border.all(
-                                color:
-                                const Color(0xFF29C6F7).withOpacity(0.4),
+                                color: const Color(0xFF29C6F7).withOpacity(0.4),
                                 width: 1.5,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(0xFF29C6F7)
-                                      .withOpacity(0.3),
+                                  color: const Color(
+                                    0xFF29C6F7,
+                                  ).withOpacity(0.3),
                                   blurRadius: 20,
                                   spreadRadius: 2,
                                 ),
@@ -192,12 +195,21 @@ class _OnboardingScreen2State extends State<OnboardingScreen2>
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: [
-                                const Icon(Icons.movie_filter_outlined,
-                                    color: Color(0xFF29C6F7), size: 20),
-                                const Icon(Icons.arrow_forward,
-                                    color: Color(0xFF29C6F7), size: 16),
-                                const Icon(Icons.audio_file_outlined,
-                                    color: Color(0xFF29C6F7), size: 20),
+                                const Icon(
+                                  Icons.movie_filter_outlined,
+                                  color: Color(0xFF29C6F7),
+                                  size: 20,
+                                ),
+                                const Icon(
+                                  Icons.arrow_forward,
+                                  color: Color(0xFF29C6F7),
+                                  size: 16,
+                                ),
+                                const Icon(
+                                  Icons.audio_file_outlined,
+                                  color: Color(0xFF29C6F7),
+                                  size: 20,
+                                ),
                               ],
                             ),
                           ),
@@ -269,10 +281,7 @@ class _OnboardingScreen2State extends State<OnboardingScreen2>
               AnimatedBuilder(
                 animation: _fadeAnimation,
                 builder: (context, child) {
-                  return Opacity(
-                    opacity: _fadeAnimation.value,
-                    child: child,
-                  );
+                  return Opacity(opacity: _fadeAnimation.value, child: child);
                 },
                 child: SizedBox(
                   width: double.infinity,
@@ -292,8 +301,14 @@ class _OnboardingScreen2State extends State<OnboardingScreen2>
                       ],
                     ),
                     child: ElevatedButton(
-                      onPressed: () { //Todo: onboarding3
-                        Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => Dashboard(),));
+                      onPressed: () {
+                        //Todo: onboarding3
+                        Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => OnboardingScreen_3(),
+                          ),
+                        );
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.transparent,
@@ -315,8 +330,11 @@ class _OnboardingScreen2State extends State<OnboardingScreen2>
                             ),
                           ),
                           SizedBox(width: 8),
-                          Icon(Icons.arrow_forward,
-                              color: Colors.white, size: 18),
+                          Icon(
+                            Icons.arrow_forward,
+                            color: Colors.white,
+                            size: 18,
+                          ),
                         ],
                       ),
                     ),
@@ -367,8 +385,8 @@ class WaveformPainter extends CustomPainter {
 
       // Create varied heights
       final baseHeight = random.nextDouble() * 0.55 + 0.08;
-      final wave = math.sin((i / barCount * 2 * math.pi) +
-          (progress * 2 * math.pi)) *
+      final wave =
+          math.sin((i / barCount * 2 * math.pi) + (progress * 2 * math.pi)) *
           0.25;
       final pulse = math.sin(progress * 2 * math.pi + i * 0.15) * 0.12;
 
@@ -380,7 +398,8 @@ class WaveformPainter extends CustomPainter {
       final opacity = (1 - distFromCenter * 0.7).clamp(0.15, 1.0);
 
       // Active area highlight
-      final isActive = (i / barCount - progress).abs() < 0.15 ||
+      final isActive =
+          (i / barCount - progress).abs() < 0.15 ||
           ((i / barCount - progress) + 1).abs() < 0.15;
 
       final paint = Paint()
@@ -399,16 +418,19 @@ class WaveformPainter extends CustomPainter {
 
     // Subtle center glow
     final glowPaint = Paint()
-      ..shader = RadialGradient(
-        colors: [
-          const Color(0xFF29C6F7).withOpacity(0.12 + pulseValue * 0.06),
-          Colors.transparent,
-        ],
-      ).createShader(Rect.fromCenter(
-        center: Offset(size.width / 2, centerY),
-        width: size.width * 0.6,
-        height: size.height * 0.6,
-      ));
+      ..shader =
+          RadialGradient(
+            colors: [
+              const Color(0xFF29C6F7).withOpacity(0.12 + pulseValue * 0.06),
+              Colors.transparent,
+            ],
+          ).createShader(
+            Rect.fromCenter(
+              center: Offset(size.width / 2, centerY),
+              width: size.width * 0.6,
+              height: size.height * 0.6,
+            ),
+          );
 
     canvas.drawRect(Rect.fromLTWH(0, 0, size.width, size.height), glowPaint);
   }
