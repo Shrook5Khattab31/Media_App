@@ -5,5 +5,5 @@ class RouteNames {
   static const String onBoarding2 = 'OnBoarding2';
   static const String extractionHub = 'ExtractionHub';
   static const String onBoarding3 = 'onBoarding3';
-  static const String perform = 'perform';
+  static const String playerScreen = 'PlayerScreen';
 }

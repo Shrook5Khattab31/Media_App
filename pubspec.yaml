@@ -37,6 +37,9 @@ dependencies:
   flutter_native_splash: ^2.4.6
   icons_plus: ^5.0.0
   camera: ^0.10.5+9
+  video_player: ^2.8.2
+  video_thumbnail: ^0.5.6
+  path_provider: ^2.1.2
 
 dev_dependencies:
   flutter_test:

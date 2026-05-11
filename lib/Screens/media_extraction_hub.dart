@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 
 class ExtractionHubScreen extends StatefulWidget {
@@ -14,6 +15,39 @@ class _ExtractionHubScreenState extends State<ExtractionHubScreen>
   int _videoTab = 0;
   late final AnimationController _pulse;
 
+  // ── Derived from videoPath ─────────────────────────────────────────────────
+  String get _fileName {
+    if (widget.videoPath == null || widget.videoPath!.isEmpty) {
+      return 'Screen Recording_001';
+    }
+    return widget.videoPath!.split('/').last;
+  }
+
+  String get _fileSize {
+    if (widget.videoPath == null) return '— MB';
+    try {
+      final bytes = File(widget.videoPath!).lengthSync();
+      if (bytes < 1024 * 1024) return '${(bytes / 1024).toStringAsFixed(1)} KB';
+      return '${(bytes / (1024 * 1024)).toStringAsFixed(1)} MB';
+    } catch (_) {
+      return '— MB';
+    }
+  }
+
+  String get _recordedAt {
+    if (widget.videoPath == null) return 'Today at 2:45 PM';
+    try {
+      final modified = File(widget.videoPath!).lastModifiedSync();
+      final hour = modified.hour > 12 ? modified.hour - 12 : modified.hour;
+      final period = modified.hour >= 12 ? 'PM' : 'AM';
+      final min = modified.minute.toString().padLeft(2, '0');
+      return 'Today at $hour:$min $period';
+    } catch (_) {
+      return 'Just now';
+    }
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
   @override
   void initState() {
     super.initState();
@@ -42,7 +76,6 @@ class _ExtractionHubScreenState extends State<ExtractionHubScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: _bg,
-      // ── Floating Save Button ──────────────────────────────────────────────
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16, 10, 16, 28),
@@ -82,7 +115,6 @@ class _ExtractionHubScreenState extends State<ExtractionHubScreen>
           ),
         ),
       ),
-      // ─────────────────────────────────────────────────────────────────────
       body: SafeArea(
         child: Column(
           children: [
@@ -94,12 +126,6 @@ class _ExtractionHubScreenState extends State<ExtractionHubScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _summaryCard(),
-                    const SizedBox(height: 12),
-                    _noiseCard(),
-                    const SizedBox(height: 20),
-                    _label('Extract Audio'),
-                    const SizedBox(height: 10),
-                    _audioCard(),
                     const SizedBox(height: 20),
                     _label('Export Video'),
                     const SizedBox(height: 10),
@@ -115,7 +141,6 @@ class _ExtractionHubScreenState extends State<ExtractionHubScreen>
     );
   }
 
-  // TOP BAR
   Widget _topBar() => Padding(
     padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
     child: Row(
@@ -126,9 +151,7 @@ class _ExtractionHubScreenState extends State<ExtractionHubScreen>
             size: 18,
             color: Colors.white,
           ),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
         ),
         const Expanded(
           child: Text(
@@ -156,7 +179,6 @@ class _ExtractionHubScreenState extends State<ExtractionHubScreen>
     ),
   );
 
-  // SUMMARY CARD
   Widget _summaryCard() => Container(
     decoration: BoxDecoration(
       color: _surface,
@@ -166,13 +188,11 @@ class _ExtractionHubScreenState extends State<ExtractionHubScreen>
     clipBehavior: Clip.hardEdge,
     child: Column(
       children: [
-        // thumbnail
         Container(
           height: 175,
           color: const Color(0xFF0A121E),
           child: Center(child: _phoneMockup()),
         ),
-        // info
         Padding(
           padding: const EdgeInsets.fromLTRB(14, 12, 14, 14),
           child: Row(
@@ -183,31 +203,35 @@ class _ExtractionHubScreenState extends State<ExtractionHubScreen>
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
-                      children: const [
-                        Text(
-                          'Screen Recording_001',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            _fileName, // ← اسم الفيديو الحقيقي
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                            ),
                           ),
                         ),
-                        SizedBox(width: 6),
-                        Icon(Icons.info_outline, size: 16, color: _grey),
+                        const SizedBox(width: 6),
+                        const Icon(Icons.info_outline, size: 16, color: _grey),
                       ],
                     ),
                     const SizedBox(height: 4),
-                    const Text(
-                      'Today at 2:45 PM',
-                      style: TextStyle(color: _grey, fontSize: 12.5),
+                    Text(
+                      _recordedAt, // ← وقت التسجيل الحقيقي
+                      style: const TextStyle(color: _grey, fontSize: 12.5),
                     ),
-                    const Text(
-                      '05:24  |  142 MB',
-                      style: TextStyle(color: _grey, fontSize: 12.5),
+                    Text(
+                      _fileSize, // ← حجم الفيديو الحقيقي
+                      style: const TextStyle(color: _grey, fontSize: 12.5),
                     ),
                   ],
                 ),
               ),
+              const SizedBox(width: 10),
               ElevatedButton(
                 onPressed: () {},
                 style: ElevatedButton.styleFrom(
@@ -323,60 +347,6 @@ class _ExtractionHubScreenState extends State<ExtractionHubScreen>
     ),
   );
 
-  // NOISE CARD
-  Widget _noiseCard() => Container(
-    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-    decoration: BoxDecoration(
-      color: _surface,
-      borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: _border),
-    ),
-    child: Row(
-      children: [
-        Container(
-          width: 46,
-          height: 46,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: const Color(0xFF0B1E38),
-            border: Border.all(color: _blue.withOpacity(0.55), width: 1.5),
-          ),
-          child: const Icon(Icons.graphic_eq, color: _blue, size: 22),
-        ),
-        const SizedBox(width: 13),
-        const Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Remove Background Noise',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
-              SizedBox(height: 2),
-              Text(
-                'AI-powered reduction for clarity',
-                style: TextStyle(color: _grey, fontSize: 12),
-              ),
-            ],
-          ),
-        ),
-        Switch(
-          value: _noiseEnabled,
-          onChanged: (v) => setState(() => _noiseEnabled = v),
-          activeColor: Colors.white,
-          activeTrackColor: _blue,
-          inactiveThumbColor: Colors.white,
-          inactiveTrackColor: const Color(0xFF253040),
-        ),
-      ],
-    ),
-  );
-
-  // SECTION LABEL
   Widget _label(String t) => Text(
     t,
     style: const TextStyle(
@@ -386,31 +356,6 @@ class _ExtractionHubScreenState extends State<ExtractionHubScreen>
     ),
   );
 
-  // AUDIO CARD
-  Widget _audioCard() => Container(
-    padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: _surface,
-      borderRadius: BorderRadius.circular(18),
-      border: Border.all(color: _border),
-    ),
-    child: Column(
-      children: [
-        _tabs(['MP3', 'WAV'], _audioTab, (i) => setState(() => _audioTab = i)),
-        const SizedBox(height: 14),
-        _progressRow('Transcoding...', 0.68, _blue),
-        const SizedBox(height: 14),
-        _btn(
-          Icons.download_rounded,
-          'Save Audio to Library',
-          _blue,
-          Colors.white,
-        ),
-      ],
-    ),
-  );
-
-  // VIDEO CARD
   Widget _videoCard() => Container(
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
@@ -439,7 +384,6 @@ class _ExtractionHubScreenState extends State<ExtractionHubScreen>
     ),
   );
 
-  // segmented tabs
   Widget _tabs(List<String> labels, int sel, ValueChanged<int> onTap) =>
       Container(
         height: 44,
@@ -479,7 +423,6 @@ class _ExtractionHubScreenState extends State<ExtractionHubScreen>
         ),
       );
 
-  // progress bar
   Widget _progressRow(String label, double val, Color color) => Column(
     children: [
       Row(
@@ -509,7 +452,6 @@ class _ExtractionHubScreenState extends State<ExtractionHubScreen>
     ],
   );
 
-  // action button
   Widget _btn(
     IconData icon,
     String label,
