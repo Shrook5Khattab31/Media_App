@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:network/Screens/dashboard.dart';
 import 'package:network/Utils/appAssets.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OnboardingScreen_3 extends StatefulWidget {
   const OnboardingScreen_3({super.key});
@@ -37,11 +38,17 @@ class _OnboardingScreen_3State extends State<OnboardingScreen_3> {
                       ),
                     ),
                     TextButton(
-                      onPressed: () {
-                        Navigator.pushReplacement(
-                          context,
-                          MaterialPageRoute(builder: (context) => Dashboard()),
-                        );
+                      onPressed: () async {
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setBool('hasSeenOnboarding', true);
+                        if (context.mounted) {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => Dashboard(),
+                            ),
+                          );
+                        }
                       },
                       child: const Text(
                         'Skip',
@@ -158,11 +165,15 @@ class _OnboardingScreen_3State extends State<OnboardingScreen_3> {
                 width: double.infinity,
                 height: 56,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(builder: (context) => Dashboard()),
-                    );
+                  onPressed: () async {
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.setBool('hasSeenOnboarding', true);
+                    if (context.mounted) {
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => Dashboard()),
+                      );
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF3A8DFF),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:network/Utils/routeNames.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -32,8 +33,17 @@ class _SplashScreenState extends State<SplashScreen>
 
     _controller.repeat(reverse: true);
 
-    Future.delayed(const Duration(seconds: 5), () {
-      Navigator.pushReplacementNamed(context, RouteNames.onboarding);
+    Future.delayed(const Duration(seconds: 5), () async {
+      final prefs = await SharedPreferences.getInstance();
+      final hasSeenOnboarding = prefs.getBool('hasSeenOnboarding') ?? false;
+
+      if (!mounted) return;
+
+      if (hasSeenOnboarding) {
+        Navigator.pushReplacementNamed(context, RouteNames.dashboard);
+      } else {
+        Navigator.pushReplacementNamed(context, RouteNames.onboarding);
+      }
     });
   }
 
@@ -72,7 +82,6 @@ class _SplashScreenState extends State<SplashScreen>
           children: [
             const Spacer(),
 
-            /// الزرار + الأنيميشن
             FadeTransition(
               opacity: _fadeAnimation,
               child: ScaleTransition(
@@ -125,7 +134,6 @@ class _SplashScreenState extends State<SplashScreen>
 
             const SizedBox(height: 30),
 
-            /// ULTRA REC
             RichText(
               text: const TextSpan(
                 children: [
@@ -158,7 +166,6 @@ class _SplashScreenState extends State<SplashScreen>
 
             const Spacer(),
 
-            /// النقاط
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [dot(true), dot(false), dot(false)],

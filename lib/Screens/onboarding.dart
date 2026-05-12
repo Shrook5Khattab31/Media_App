@@ -1,23 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:network/Screens/onBoarding_2.dart';
 import 'package:network/Utils/routeNames.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class OnBoardingScreen extends StatelessWidget {
   const OnBoardingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Onboarding',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(fontFamily: 'SF Pro Display'),
-      home: const OnboardingCapturePage(),
-    );
+    // No nested MaterialApp — we are already inside one from main.dart
+    return const OnboardingCapturePage();
   }
 }
 
 class OnboardingCapturePage extends StatelessWidget {
   const OnboardingCapturePage({super.key});
+
+  Future<void> _markOnboardingSeen() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('hasSeenOnboarding', true);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,11 +36,13 @@ class OnboardingCapturePage extends StatelessWidget {
                 child: Padding(
                   padding: const EdgeInsets.only(top: 8.0),
                   child: TextButton(
-                    onPressed: () {
-                      Navigator.of(
-                        context,
-                        rootNavigator: true,
-                      ).pushReplacementNamed(RouteNames.dashboard);
+                    onPressed: () async {
+                      await _markOnboardingSeen();
+                      if (context.mounted) {
+                        Navigator.of(
+                          context,
+                        ).pushReplacementNamed(RouteNames.dashboard);
+                      }
                     },
                     child: const Text(
                       'Skip',
@@ -71,7 +75,7 @@ class OnboardingCapturePage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(28),
                   child: Image.asset(
                     'assets/recording_illustration.png',
-                    fit: BoxFit.contain, // or BoxFit.cover
+                    fit: BoxFit.contain,
                   ),
                 ),
               ),
@@ -127,7 +131,12 @@ class OnboardingCapturePage extends StatelessWidget {
                 height: 56,
                 child: ElevatedButton(
                   onPressed: () {
-                    Navigator.push(context, MaterialPageRoute(builder: (context) => OnboardingScreen2(),));
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => OnboardingScreen2(),
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF29ABE2),

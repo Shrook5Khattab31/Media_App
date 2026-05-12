@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:network/Screens/dashboard.dart';
 import '../Models/recording_model.dart';
 import '../Utils/appColors.dart';
 
@@ -147,7 +148,7 @@ class _ExtractionHubScreenState extends State<ExtractionHubScreen>
       ),
     );
     // Pop back to the root (Dashboard)
-    Navigator.of(context).popUntil((route) => route.isFirst);
+    Navigator.push(context, MaterialPageRoute(builder: (_) => Dashboard()));
   }
 
   Widget _topBar() => Padding(

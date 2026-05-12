@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:network/Screens/onboarding_3.dart';
 import 'package:network/Utils/routeNames.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'dashboard.dart';
 
@@ -85,11 +86,15 @@ class _OnboardingScreen2State extends State<OnboardingScreen2>
                       onPressed: () {},
                     ),
                     TextButton(
-                      onPressed: () {
-                        Navigator.pushReplacementNamed(
-                          context,
-                          RouteNames.dashboard,
-                        );
+                      onPressed: () async {
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setBool('hasSeenOnboarding', true);
+                        if (context.mounted) {
+                          Navigator.pushReplacementNamed(
+                            context,
+                            RouteNames.dashboard,
+                          );
+                        }
                       },
                       child: const Text(
                         'Skip',

@@ -73,7 +73,7 @@ class _PlayerScreenState extends State<PlayerScreen> {
           children: [
             _topBar(),
             if (_initialized && _controller != null) ...[
-              _videoArea(),
+              Expanded(child: _videoArea()),
               _controls(),
             ] else ...[
               _placeholder(),
