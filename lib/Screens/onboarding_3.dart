@@ -234,8 +234,9 @@ class _FeatureCard extends StatelessWidget {
       children: [
         ClipRRect(
           borderRadius: BorderRadius.circular(16),
-          child: AspectRatio(
-            aspectRatio: 16 / 9, // makes it wider
+          child: SizedBox(
+            width: double.infinity,
+            height: 110,
             child: backgroundWidget,
           ),
         ),
