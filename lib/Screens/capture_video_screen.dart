@@ -2,7 +2,10 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:network/Screens/media_extraction_hub.dart';
+import '../Models/recording_model.dart';
+import '../Store/recordings_store.dart';
+import '../Utils/appColors.dart';
+import 'media_extraction_hub.dart';
 
 class CaptureVideoScreen extends StatefulWidget {
   const CaptureVideoScreen({super.key});
@@ -13,13 +16,6 @@ class CaptureVideoScreen extends StatefulWidget {
 
 class _CaptureVideoScreenState extends State<CaptureVideoScreen>
     with SingleTickerProviderStateMixin {
-  // ── Colors ──────────────────────────────────────────────────────────────────
-  static const Color _red = Color(0xFFE53935);
-  static const Color _blue = Color(0xFF3D3DF5);
-  static const Color _white = Color(0xFFFFFFFF);
-  static const Color _dark = Color(0xFF1A1A1A);
-  static const Color _cardBg = Color(0xCC1C1C2E);
-
   // ── Camera ──────────────────────────────────────────────────────────────────
   CameraController? _cameraController;
   List<CameraDescription> _cameras = [];
@@ -29,7 +25,7 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
   int _selectedCameraIndex = 0;
 
   // ── Zoom ─────────────────────────────────────────────────────────────────────
-  int _selectedZoom = 1; // 0 = 0.5x, 1 = 1x, 2 = 2x
+  int _selectedZoom = 1;
   final List<double> _zoomLevels = [0.5, 1.0, 2.0];
 
   // ── Timer ───────────────────────────────────────────────────────────────────
@@ -37,6 +33,9 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
   late Animation<double> _blinkAnimation;
   final Stopwatch _stopwatch = Stopwatch();
   String _elapsed = '00 : 00 : 00';
+
+  // ── Recording start time (for metadata) ─────────────────────────────────────
+  DateTime? _recordingStartTime;
 
   @override
   void initState() {
@@ -71,7 +70,6 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
     _cameraController = controller;
     try {
       await controller.initialize();
-      // Apply initial zoom
       await _applyZoom(_zoomLevels[_selectedZoom]);
       if (mounted) setState(() => _isCameraInitialized = true);
     } catch (e) {
@@ -85,14 +83,12 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
     try {
       final minZoom = await _cameraController!.getMinZoomLevel();
       final maxZoom = await _cameraController!.getMaxZoomLevel();
-      final clamped = zoom.clamp(minZoom, maxZoom);
-      await _cameraController!.setZoomLevel(clamped);
+      await _cameraController!.setZoomLevel(zoom.clamp(minZoom, maxZoom));
     } catch (_) {}
   }
 
   Future<void> _switchCamera() async {
-    if (_cameras.length < 2) return;
-    if (_isRecording) return; // can't switch while recording
+    if (_cameras.length < 2 || _isRecording) return;
     _selectedCameraIndex = (_selectedCameraIndex + 1) % _cameras.length;
     setState(() => _isCameraInitialized = false);
     await _cameraController?.dispose();
@@ -106,6 +102,7 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
       return;
     try {
       await _cameraController!.startVideoRecording();
+      _recordingStartTime = DateTime.now();
       _stopwatch.reset();
       _stopwatch.start();
       _blinkController.repeat(reverse: true);
@@ -142,19 +139,40 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
     if (_cameraController == null || !_isRecording) return;
     try {
       final file = await _cameraController!.stopVideoRecording();
+      final recordedDuration = _stopwatch.elapsed;
+      final startTime = _recordingStartTime ?? DateTime.now();
+
       _stopwatch.stop();
       _blinkController.stop();
+
       setState(() {
         _isRecording = false;
         _isPaused = false;
         _elapsed = '00 : 00 : 00';
       });
 
+      // ── Build metadata and save to store ──────────────────────────────────
+      int fileSize = 0;
+      try {
+        fileSize = File(file.path).lengthSync();
+      } catch (_) {}
+
+      final recording = RecordingModel(
+        path: file.path,
+        fileName: file.path.split('/').last,
+        recordedAt: startTime,
+        duration: recordedDuration,
+        fileSizeBytes: fileSize,
+      );
+
+      RecordingsStore.instance.addRecording(recording);
+
       if (mounted) {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (_) => ExtractionHubScreen(videoPath: file.path),
+            builder: (_) =>
+                ExtractionHubScreen(videoPath: file.path, recording: recording),
           ),
         );
       }
@@ -188,7 +206,7 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
           const SnackBar(
             content: Text('Snapshot saved!'),
             duration: Duration(seconds: 1),
-            backgroundColor: Color(0xFF3D3DF5),
+            backgroundColor: AppColors.blueColor,
           ),
         );
       }
@@ -227,7 +245,7 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
       return Container(
         color: const Color(0xFF0A0F1A),
         child: const Center(
-          child: CircularProgressIndicator(color: Color(0xFF3D3DF5)),
+          child: CircularProgressIndicator(color: AppColors.cyanColor),
         ),
       );
     }
@@ -244,7 +262,6 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
       ),
       child: Row(
         children: [
-          // Blinking dot — only shown while recording
           if (_isRecording) ...[
             FadeTransition(
               opacity: _blinkAnimation,
@@ -252,7 +269,7 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
                 width: 10,
                 height: 10,
                 decoration: const BoxDecoration(
-                  color: _red,
+                  color: AppColors.redColor,
                   shape: BoxShape.circle,
                 ),
               ),
@@ -261,7 +278,7 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
             Text(
               _isPaused ? 'PAUSED' : 'REC',
               style: TextStyle(
-                color: _isPaused ? Colors.orange : _red,
+                color: _isPaused ? Colors.orange : AppColors.redColor,
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 1.2,
@@ -272,14 +289,13 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
           Text(
             _elapsed,
             style: const TextStyle(
-              color: _white,
+              color: AppColors.whiteColor,
               fontSize: 22,
               fontWeight: FontWeight.w700,
               letterSpacing: 1,
             ),
           ),
           const Spacer(),
-          // Back button (when not recording)
           if (!_isRecording)
             GestureDetector(
               onTap: () => Navigator.pop(context),
@@ -295,7 +311,7 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
                 ),
                 child: const Icon(
                   Icons.arrow_back_ios_new,
-                  color: _white,
+                  color: AppColors.whiteColor,
                   size: 16,
                 ),
               ),
@@ -321,20 +337,19 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Pause / Resume
               GestureDetector(
                 onTap: _isRecording ? _pauseResumeRecording : null,
                 child: _circleBtn(
                   _isPaused ? Icons.play_arrow_rounded : Icons.pause_rounded,
                   size: 52,
-                  bg: _isRecording ? _dark : Colors.white.withOpacity(0.1),
+                  bg: _isRecording
+                      ? AppColors.cardBg
+                      : Colors.white.withOpacity(0.1),
                 ),
               ),
               const SizedBox(width: 24),
-              // Record / Stop
               _isRecording ? _stopBtn() : _recordBtn(),
               const SizedBox(width: 24),
-              // Snapshot + switch camera
               GestureDetector(
                 onTap: _isRecording ? _takeSnapshot : _switchCamera,
                 child: _circleBtn(
@@ -342,7 +357,7 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
                       ? Icons.camera_alt_outlined
                       : Icons.cameraswitch_outlined,
                   size: 52,
-                  bg: _dark,
+                  bg: AppColors.cardBg,
                 ),
               ),
             ],
@@ -370,7 +385,7 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
       width: size,
       height: size,
       decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
-      child: Icon(icon, color: _white, size: size * 0.45),
+      child: Icon(icon, color: AppColors.whiteColor, size: size * 0.45),
     );
   }
 
@@ -381,18 +396,22 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
         width: 72,
         height: 72,
         decoration: BoxDecoration(
-          color: _red,
+          color: AppColors.redColor,
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: _red.withOpacity(0.45),
+              color: AppColors.redColor.withOpacity(0.45),
               blurRadius: 20,
               spreadRadius: 2,
             ),
           ],
           border: Border.all(color: Colors.white.withOpacity(0.25), width: 2),
         ),
-        child: const Icon(Icons.videocam, color: _white, size: 32),
+        child: const Icon(
+          Icons.videocam,
+          color: AppColors.whiteColor,
+          size: 32,
+        ),
       ),
     );
   }
@@ -404,18 +423,22 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
         width: 72,
         height: 72,
         decoration: BoxDecoration(
-          color: _red,
+          color: AppColors.redColor,
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: _red.withOpacity(0.45),
+              color: AppColors.redColor.withOpacity(0.45),
               blurRadius: 20,
               spreadRadius: 2,
             ),
           ],
           border: Border.all(color: Colors.white.withOpacity(0.25), width: 2),
         ),
-        child: const Icon(Icons.stop_rounded, color: _white, size: 32),
+        child: const Icon(
+          Icons.stop_rounded,
+          color: AppColors.whiteColor,
+          size: 32,
+        ),
       ),
     );
   }
@@ -436,16 +459,20 @@ class _CaptureVideoScreenState extends State<CaptureVideoScreen>
             margin: const EdgeInsets.symmetric(horizontal: 6),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
             decoration: BoxDecoration(
-              color: isSelected ? _blue : Colors.black.withOpacity(0.5),
+              color: isSelected
+                  ? AppColors.blueColor
+                  : Colors.black.withOpacity(0.5),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: isSelected ? _blue : Colors.white.withOpacity(0.15),
+                color: isSelected
+                    ? AppColors.blueColor
+                    : Colors.white.withOpacity(0.15),
               ),
             ),
             child: Text(
               zooms[i],
               style: TextStyle(
-                color: _white,
+                color: AppColors.whiteColor,
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
               ),

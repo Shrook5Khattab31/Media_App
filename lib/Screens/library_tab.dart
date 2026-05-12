@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import '../Models/recording_model.dart';
+import '../Store/recordings_store.dart';
+import '../Utils/appColors.dart';
+import 'player_screen.dart';
 
 class LibraryTab extends StatefulWidget {
   const LibraryTab({super.key});
@@ -8,70 +12,29 @@ class LibraryTab extends StatefulWidget {
 }
 
 class _LibraryTabState extends State<LibraryTab> {
-  static const Color _bg = Color(0xFF0A0A0F);
-  static const Color _cyan = Color(0xFF00C2FF);
-  static const Color _gray = Color(0xFF64748B);
-  static const Color _cardBg = Color(0xFF1A1A28);
-  static const Color _surface = Color(0xFF0E0E16);
-
   int _selectedTab = 0;
   final List<String> _tabs = ['Video'];
-  final List<_MediaItem> _items = const [
-    _MediaItem(
-      name: 'Interview_01.mp4',
-      size: '12.4 MB',
-      time: '2h ago',
-      duration: '03:42',
-      imagePath: 'assets/images/interview.jpg',
-      isAudio: false,
-    ),
-    _MediaItem(
-      name: 'VoiceNote_Oct12.wav',
-      size: '2.1 MB',
-      time: '5h ago',
-      isAudio: true,
-      audioIcon: Icons.mic,
-    ),
-    _MediaItem(
-      name: 'Surf_Session.mov',
-      size: '45.8 MB',
-      time: 'Yesterday',
-      duration: '01:15',
-      imagePath: 'assets/images/surf.jpg',
-      isAudio: false,
-    ),
-    _MediaItem(
-      name: 'Meeting_Recording.m...',
-      size: '8.3 MB',
-      time: 'Oct 10',
-      isAudio: true,
-      audioIcon: Icons.music_note,
-    ),
-    _MediaItem(
-      name: 'Project_Demo_Final....',
-      size: '112 MB',
-      time: 'Oct 09',
-      duration: '12:05',
-      imagePath: 'assets/images/project.jpg',
-      isAudio: false,
-    ),
-    _MediaItem(
-      name: 'Podcast_S01E04.mp3',
-      size: '42 MB',
-      time: 'Oct 08',
-      isAudio: true,
-      audioIcon: Icons.podcasts,
-    ),
-  ];
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
-  List<_MediaItem> get _filteredItems {
-    return _items.where((e) => !e.isAudio).toList();
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() => _searchQuery = _searchController.text.toLowerCase());
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _bg,
+      backgroundColor: AppColors.bgColor,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -93,14 +56,13 @@ class _LibraryTabState extends State<LibraryTab> {
                   ),
                   Row(
                     children: [
-                      // Filter button
                       Container(
                         width: 40,
                         height: 40,
                         decoration: BoxDecoration(
-                          color: _cardBg,
+                          color: AppColors.cardBg,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFF1A1A28)),
+                          border: Border.all(color: AppColors.borderColor),
                         ),
                         child: const Icon(
                           Icons.tune,
@@ -109,12 +71,11 @@ class _LibraryTabState extends State<LibraryTab> {
                         ),
                       ),
                       const SizedBox(width: 10),
-                      // Add button
                       Container(
                         width: 40,
                         height: 40,
                         decoration: const BoxDecoration(
-                          color: _cyan,
+                          color: AppColors.cyanColor,
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
@@ -137,18 +98,36 @@ class _LibraryTabState extends State<LibraryTab> {
               child: Container(
                 height: 46,
                 decoration: BoxDecoration(
-                  color: _surface,
+                  color: AppColors.secondBgColor,
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: const Color(0xFF1A1A28)),
+                  border: Border.all(color: AppColors.borderColor),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    SizedBox(width: 14),
-                    Icon(Icons.search, color: Color(0xFF64748B), size: 20),
-                    SizedBox(width: 10),
-                    Text(
-                      'Search recordings...',
-                      style: TextStyle(color: Color(0xFF64748B), fontSize: 15),
+                    const SizedBox(width: 14),
+                    const Icon(
+                      Icons.search,
+                      color: AppColors.grayColor,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: TextField(
+                        controller: _searchController,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 15,
+                        ),
+                        decoration: const InputDecoration(
+                          hintText: 'Search recordings...',
+                          hintStyle: TextStyle(
+                            color: AppColors.grayColor,
+                            fontSize: 15,
+                          ),
+                          border: InputBorder.none,
+                          isDense: true,
+                        ),
+                      ),
                     ),
                   ],
                 ),
@@ -163,9 +142,9 @@ class _LibraryTabState extends State<LibraryTab> {
               child: Container(
                 height: 40,
                 decoration: BoxDecoration(
-                  color: _surface,
+                  color: AppColors.secondBgColor,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: const Color(0xFF1A1A28)),
+                  border: Border.all(color: AppColors.borderColor),
                 ),
                 child: Row(
                   children: List.generate(_tabs.length, (index) {
@@ -177,17 +156,23 @@ class _LibraryTabState extends State<LibraryTab> {
                           duration: const Duration(milliseconds: 200),
                           margin: const EdgeInsets.all(4),
                           decoration: BoxDecoration(
-                            color: isSelected ? _cardBg : Colors.transparent,
+                            color: isSelected
+                                ? AppColors.cardBg
+                                : Colors.transparent,
                             borderRadius: BorderRadius.circular(9),
                             border: isSelected
-                                ? Border.all(color: _cyan.withOpacity(0.3))
+                                ? Border.all(
+                                    color: AppColors.cyanColor.withOpacity(0.3),
+                                  )
                                 : null,
                           ),
                           child: Center(
                             child: Text(
                               _tabs[index],
                               style: TextStyle(
-                                color: isSelected ? _cyan : _gray,
+                                color: isSelected
+                                    ? AppColors.cyanColor
+                                    : AppColors.grayColor,
                                 fontSize: 14,
                                 fontWeight: isSelected
                                     ? FontWeight.w600
@@ -207,20 +192,50 @@ class _LibraryTabState extends State<LibraryTab> {
 
             // Grid
             Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: GridView.builder(
-                  itemCount: _filteredItems.length,
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    crossAxisSpacing: 12,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 0.82,
-                  ),
-                  itemBuilder: (context, index) {
-                    return _MediaCard(item: _filteredItems[index]);
-                  },
-                ),
+              child: ListenableBuilder(
+                listenable: RecordingsStore.instance,
+                builder: (context, _) {
+                  final allRecordings = RecordingsStore.instance.recent;
+                  final filtered = _searchQuery.isEmpty
+                      ? allRecordings
+                      : allRecordings
+                            .where(
+                              (r) => r.fileName.toLowerCase().contains(
+                                _searchQuery,
+                              ),
+                            )
+                            .toList();
+
+                  if (filtered.isEmpty) {
+                    return _emptyState();
+                  }
+
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: GridView.builder(
+                      itemCount: filtered.length,
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            crossAxisSpacing: 12,
+                            mainAxisSpacing: 16,
+                            childAspectRatio: 0.82,
+                          ),
+                      itemBuilder: (context, index) {
+                        return _RecordingCard(
+                          recording: filtered[index],
+                          onTap: () => Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) =>
+                                  PlayerScreen(recording: filtered[index]),
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  );
+                },
               ),
             ),
           ],
@@ -228,35 +243,60 @@ class _LibraryTabState extends State<LibraryTab> {
       ),
     );
   }
+
+  Widget _emptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.video_library_outlined,
+            color: AppColors.grayColor.withOpacity(0.3),
+            size: 64,
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'No videos yet',
+            style: TextStyle(
+              color: AppColors.grayColor,
+              fontSize: 18,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Record a video to see it here',
+            style: TextStyle(color: AppColors.grayColor, fontSize: 14),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-// ── Media Card ──────────────────────────────────────────────────────────────
+// ── Recording Card ────────────────────────────────────────────────────────────
 
-class _MediaCard extends StatelessWidget {
-  final _MediaItem item;
-  const _MediaCard({required this.item});
+class _RecordingCard extends StatelessWidget {
+  final RecordingModel recording;
+  final VoidCallback onTap;
 
-  static const Color _cardBg = Color(0xFF1A1A28);
-  static const Color _cyan = Color(0xFF00C2FF);
+  const _RecordingCard({required this.recording, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Stack(
-            children: [
-              ClipRRect(
-                borderRadius: BorderRadius.circular(14),
-                child: item.isAudio
-                    ? _AudioThumbnail(cardBg: _cardBg, cyan: _cyan)
-                    : _VideoThumbnail(
-                        imagePath: item.imagePath,
-                        cardBg: _cardBg,
-                      ),
-              ),
-              if (item.duration != null)
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: _VideoThumbnail(),
+                ),
+                // Duration badge
                 Positioned(
                   bottom: 8,
                   right: 8,
@@ -270,7 +310,7 @@ class _MediaCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(6),
                     ),
                     child: Text(
-                      item.duration!,
+                      recording.formattedDuration,
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 11,
@@ -279,136 +319,61 @@ class _MediaCard extends StatelessWidget {
                     ),
                   ),
                 ),
-              if (item.isAudio && item.audioIcon != null)
-                Positioned(
-                  top: 10,
-                  left: 10,
-                  child: Icon(item.audioIcon, color: _cyan, size: 18),
+                // Play overlay
+                Positioned.fill(
+                  child: Center(
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.45),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.play_arrow,
+                        color: Colors.white,
+                        size: 22,
+                      ),
+                    ),
+                  ),
                 ),
-            ],
+              ],
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Text(
-          item.name,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 13,
-            fontWeight: FontWeight.w500,
+          const SizedBox(height: 8),
+          Text(
+            recording.fileName,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 13,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-        ),
-        const SizedBox(height: 2),
-        Text(
-          '${item.size} • ${item.time}',
-          style: const TextStyle(color: Color(0xFF64748B), fontSize: 11),
-        ),
-      ],
+          const SizedBox(height: 2),
+          Text(
+            '${recording.formattedSize} • ${recording.shortDate}',
+            style: const TextStyle(color: AppColors.grayColor, fontSize: 11),
+          ),
+        ],
+      ),
     );
   }
 }
 
-// ── Audio Thumbnail ──────────────────────────────────────────────────────────
-
-class _AudioThumbnail extends StatelessWidget {
-  final Color cardBg;
-  final Color cyan;
-  const _AudioThumbnail({required this.cardBg, required this.cyan});
-
+class _VideoThumbnail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
       height: double.infinity,
-      color: cardBg,
-      child: CustomPaint(painter: _WaveformPainter(color: cyan)),
+      color: AppColors.cardBg,
+      child: const Icon(
+        Icons.videocam_outlined,
+        color: Color(0xFF3A3A5C),
+        size: 36,
+      ),
     );
   }
-}
-
-class _WaveformPainter extends CustomPainter {
-  final Color color;
-  const _WaveformPainter({required this.color});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 3
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
-
-    final heights = [0.3, 0.5, 0.7, 1.0, 0.8, 0.6, 0.9, 0.5, 0.7, 0.4, 0.6];
-    final barWidth = size.width / (heights.length * 2.2);
-    final centerY = size.height / 2;
-
-    for (int i = 0; i < heights.length; i++) {
-      final x = (size.width / 2) - ((heights.length / 2 - i) * barWidth * 2.2);
-      final barHeight = heights[i] * size.height * 0.4;
-      canvas.drawLine(
-        Offset(x, centerY - barHeight),
-        Offset(x, centerY + barHeight),
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
-
-// ── Video Thumbnail ──────────────────────────────────────────────────────────
-
-class _VideoThumbnail extends StatelessWidget {
-  final String? imagePath;
-  final Color cardBg;
-  const _VideoThumbnail({this.imagePath, required this.cardBg});
-
-  @override
-  Widget build(BuildContext context) {
-    if (imagePath != null) {
-      return Image.asset(
-        imagePath!,
-        width: double.infinity,
-        height: double.infinity,
-        fit: BoxFit.cover,
-        errorBuilder: (_, __, ___) => _placeholder(),
-      );
-    }
-    return _placeholder();
-  }
-
-  Widget _placeholder() => Container(
-    width: double.infinity,
-    height: double.infinity,
-    color: cardBg,
-    child: const Icon(
-      Icons.videocam_outlined,
-      color: Color(0xFF3A3A5C),
-      size: 36,
-    ),
-  );
-}
-
-// ── Data Model ───────────────────────────────────────────────────────────────
-
-class _MediaItem {
-  final String name;
-  final String size;
-  final String time;
-  final String? duration;
-  final String? imagePath;
-  final bool isAudio;
-  final IconData? audioIcon;
-
-  const _MediaItem({
-    required this.name,
-    required this.size,
-    required this.time,
-    this.duration,
-    this.imagePath,
-    this.isAudio = false,
-    this.audioIcon,
-  });
 }

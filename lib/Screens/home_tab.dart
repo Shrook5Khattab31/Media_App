@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import '../Models/recording_model.dart';
+import '../Store/recordings_store.dart';
 import '../Utils/appColors.dart';
 import 'capture_video_screen.dart';
+import 'player_screen.dart';
 
 class HomeTab extends StatelessWidget {
   const HomeTab({super.key});
@@ -23,15 +26,26 @@ class HomeTab extends StatelessWidget {
               const SizedBox(height: 30),
               _recentFilesHeader(),
               const SizedBox(height: 14),
-              _videoCard(),
-              const SizedBox(height: 12),
-              _fileRow(
-                leading: _thumbBox(Icons.code_outlined),
-                title: 'Code_Review_Session.mp4',
-                subtitle: Text(
-                  'Yesterday • 18.2 MB',
-                  style: TextStyle(color: AppColors.grayColor, fontSize: 12),
-                ),
+              // Live recent list
+              ListenableBuilder(
+                listenable: RecordingsStore.instance,
+                builder: (context, _) {
+                  final recordings = RecordingsStore.instance.recent;
+                  if (recordings.isEmpty) {
+                    return _emptyRecent();
+                  }
+                  return Column(
+                    children: recordings
+                        .take(5)
+                        .map(
+                          (r) => Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: _recordingCard(context, r),
+                          ),
+                        )
+                        .toList(),
+                  );
+                },
               ),
               const SizedBox(height: 24),
             ],
@@ -182,48 +196,6 @@ class HomeTab extends StatelessWidget {
     );
   }
 
-  Widget _storageBar() {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 13),
-      decoration: BoxDecoration(
-        color: AppColors.secondBgColor,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          const Icon(
-            Icons.cloud_upload_outlined,
-            color: AppColors.cyanColor,
-            size: 22,
-          ),
-          const SizedBox(width: 10),
-          const Text(
-            'Storage: 4.2GB / 10GB',
-            style: TextStyle(
-              color: AppColors.whiteColor,
-              fontSize: 13,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(4),
-              child: LinearProgressIndicator(
-                value: 0.42,
-                minHeight: 6,
-                backgroundColor: AppColors.grayColor.withOpacity(0.2),
-                valueColor: const AlwaysStoppedAnimation<Color>(
-                  AppColors.cyanColor,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _recentFilesHeader() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -241,151 +213,117 @@ class HomeTab extends StatelessWidget {
     );
   }
 
-  Widget _videoCard() {
+  Widget _emptyRecent() {
     return Container(
-      decoration: BoxDecoration(
-        color: AppColors.secondBgColor,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      clipBehavior: Clip.hardEdge,
+      padding: const EdgeInsets.symmetric(vertical: 32),
+      alignment: Alignment.center,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Stack(
-            children: [
-              Container(
-                height: 185,
-                width: double.infinity,
-                color: const Color(0xFF111E18),
-                child: const Icon(
-                  Icons.landscape,
-                  color: Color(0xFF1E3828),
-                  size: 90,
-                ),
+          Icon(
+            Icons.videocam_off_outlined,
+            color: AppColors.grayColor.withOpacity(0.4),
+            size: 48,
+          ),
+          const SizedBox(height: 12),
+          const Text(
+            'No recordings yet',
+            style: TextStyle(color: AppColors.grayColor, fontSize: 15),
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Tap "Capture Video" to get started',
+            style: TextStyle(color: AppColors.grayColor, fontSize: 13),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _recordingCard(BuildContext context, RecordingModel recording) {
+    return GestureDetector(
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => PlayerScreen(recording: recording)),
+      ),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+        decoration: BoxDecoration(
+          color: AppColors.secondBgColor,
+          borderRadius: BorderRadius.circular(18),
+        ),
+        child: Row(
+          children: [
+            // Thumbnail placeholder
+            Container(
+              width: 56,
+              height: 56,
+              decoration: BoxDecoration(
+                color: AppColors.cardBg,
+                borderRadius: BorderRadius.circular(14),
               ),
-              Positioned.fill(
-                child: Center(
-                  child: Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.55),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.play_arrow,
-                      color: AppColors.whiteColor,
-                      size: 30,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  const Icon(
+                    Icons.videocam_outlined,
+                    color: AppColors.cyanColor,
+                    size: 26,
+                  ),
+                  Positioned(
+                    bottom: 4,
+                    right: 4,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 4,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.7),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        recording.formattedDuration,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 8,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
                     ),
                   ),
-                ),
+                ],
               ),
-              Positioned(
-                bottom: 10,
-                right: 12,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.65),
-                    borderRadius: BorderRadius.circular(7),
-                  ),
-                  child: const Text(
-                    '04:12',
-                    style: TextStyle(
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    recording.fileName,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
                       color: AppColors.whiteColor,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    '${recording.shortDate} • ${recording.formattedSize}',
+                    style: const TextStyle(
+                      color: AppColors.grayColor,
                       fontSize: 12,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(14, 12, 10, 14),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Interview_Tech_01.mp4',
-                      style: TextStyle(
-                        color: AppColors.whiteColor,
-                        fontSize: 15,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Today • 10:24 AM • 24.8 MB',
-                      style: TextStyle(
-                        color: AppColors.grayColor,
-                        fontSize: 12,
-                      ),
-                    ),
-                  ],
-                ),
-                Icon(Icons.more_vert, color: AppColors.grayColor),
-              ],
             ),
-          ),
-        ],
+            const Icon(Icons.more_vert, color: AppColors.grayColor),
+          ],
+        ),
       ),
-    );
-  }
-
-  Widget _fileRow({
-    required Widget leading,
-    required String title,
-    required Widget subtitle,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
-      decoration: BoxDecoration(
-        color: AppColors.secondBgColor,
-        borderRadius: BorderRadius.circular(18),
-      ),
-      child: Row(
-        children: [
-          leading,
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    color: AppColors.whiteColor,
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                const SizedBox(height: 5),
-                subtitle,
-              ],
-            ),
-          ),
-          Icon(Icons.more_vert, color: AppColors.grayColor),
-        ],
-      ),
-    );
-  }
-
-  Widget _thumbBox(IconData icon) {
-    return Container(
-      width: 48,
-      height: 48,
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A2030),
-        borderRadius: BorderRadius.circular(14),
-      ),
-      child: Icon(icon, color: AppColors.cyanColor, size: 24),
     );
   }
 }

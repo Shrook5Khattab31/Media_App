@@ -1,262 +1,366 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
+import '../Models/recording_model.dart';
+import '../Utils/appColors.dart';
 
 class PlayerScreen extends StatefulWidget {
+  final RecordingModel? recording;
+
+  const PlayerScreen({super.key, this.recording});
+
   @override
-  _PlayerScreenState createState() => _PlayerScreenState();
+  State<PlayerScreen> createState() => _PlayerScreenState();
 }
 
 class _PlayerScreenState extends State<PlayerScreen> {
-  late VideoPlayerController controller;
-
-  List<Map<String, String>> mediaList = [
-    {
-      "path": "assets/video.mp4",
-      "thumb": "assets/top1.jpg",
-      "title": "Main App Refactor",
-      "type": "video",
-    },
-    {
-      "path": "assets/video1.mov",
-      "thumb": "assets/top2.jpg",
-      "title": "UI Design",
-      "type": "video",
-    },
-    {
-      "path": "assets/audio.wav",
-      "thumb": "assets/top3.jpg",
-      "title": "Podcast Audio",
-      "type": "audio",
-    },
-  ];
-
-  Map<String, String>? currentMedia;
+  VideoPlayerController? _controller;
+  bool _initialized = false;
+  bool _isPlaying = false;
 
   @override
   void initState() {
     super.initState();
-    currentMedia = mediaList[0];
-    initMedia(currentMedia!);
-    startUpdater();
+    _initPlayer();
   }
 
-  void initMedia(Map<String, String> item) {
-    controller = VideoPlayerController.asset(item["path"]!)
-      ..initialize().then((_) {
-        setState(() {});
-        controller.play();
-      });
+  Future<void> _initPlayer() async {
+    if (widget.recording == null) return;
+
+    final file = File(widget.recording!.path);
+    if (!file.existsSync()) return;
+
+    final controller = VideoPlayerController.file(file);
+    _controller = controller;
+
+    await controller.initialize();
+    controller.addListener(_onControllerUpdate);
+    setState(() => _initialized = true);
   }
 
-  void changeMedia(Map<String, String> item) async {
-    await controller.pause();
-    await controller.dispose();
-    currentMedia = item;
-    initMedia(item);
+  void _onControllerUpdate() {
+    if (!mounted) return;
+    final playing = _controller?.value.isPlaying ?? false;
+    if (playing != _isPlaying) {
+      setState(() => _isPlaying = playing);
+    }
+    // Trigger rebuild for position updates
+    setState(() {});
   }
 
-  void startUpdater() {
-    Future.doWhile(() async {
-      await Future.delayed(Duration(milliseconds: 300));
-      if (!mounted) return false;
-      if (controller.value.isPlaying) setState(() {});
-      return true;
-    });
+  @override
+  void dispose() {
+    _controller?.removeListener(_onControllerUpdate);
+    _controller?.dispose();
+    super.dispose();
   }
 
-  void forward() {
-    final newPos = controller.value.position + Duration(seconds: 10);
-    controller.seekTo(newPos);
-  }
-
-  void backward() {
-    final newPos = controller.value.position - Duration(seconds: 10);
-
-    controller.seekTo(newPos < Duration.zero ? Duration.zero : newPos);
-  }
-
-  String format(Duration d) {
-    String two(int n) => n.toString().padLeft(2, "0");
-    return "${two(d.inMinutes)}:${two(d.inSeconds % 60)}";
+  String _format(Duration d) {
+    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    if (d.inHours > 0) {
+      return '${d.inHours}:$m:$s';
+    }
+    return '$m:$s';
   }
 
   @override
   Widget build(BuildContext context) {
-    double position = controller.value.isInitialized
-        ? controller.value.position.inSeconds.toDouble()
-        : 0;
-
-    double duration =
-        controller.value.isInitialized &&
-            controller.value.duration.inSeconds > 0
-        ? controller.value.duration.inSeconds.toDouble()
-        : 1;
-
     return Scaffold(
-      backgroundColor: Color(0xFF0B1220),
+      backgroundColor: AppColors.bgColor,
       body: SafeArea(
         child: Column(
           children: [
-            SizedBox(height: 10),
-
-            // 🔥 PLAYER
-            if (controller.value.isInitialized)
-              Container(
-                margin: EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: Colors.black,
-                ),
-                child: Column(
-                  children: [
-                    currentMedia!["type"] == "video"
-                        ? AspectRatio(
-                            aspectRatio: controller.value.aspectRatio,
-                            child: VideoPlayer(controller),
-                          )
-                        : Container(
-                            height: 200,
-                            child: Center(
-                              child: Icon(
-                                Icons.music_note,
-                                size: 80,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ),
-
-                    Slider(
-                      value: position,
-                      max: duration,
-                      onChanged: (v) {
-                        controller.seekTo(Duration(seconds: v.toInt()));
-                      },
-                    ),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          format(controller.value.position),
-                          style: TextStyle(color: Colors.white70),
-                        ),
-                        Text(
-                          format(controller.value.duration),
-                          style: TextStyle(color: Colors.white70),
-                        ),
-                      ],
-                    ),
-
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        IconButton(
-                          onPressed: backward,
-                          icon: Icon(Icons.replay_10, color: Colors.white),
-                        ),
-                        IconButton(
-                          onPressed: () {
-                            setState(() {
-                              controller.value.isPlaying
-                                  ? controller.pause()
-                                  : controller.play();
-                            });
-                          },
-                          icon: Icon(
-                            controller.value.isPlaying
-                                ? Icons.pause
-                                : Icons.play_arrow,
-                            color: Colors.white,
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: forward,
-                          icon: Icon(Icons.forward_10, color: Colors.white),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-
-            SizedBox(height: 15),
-
-            // 🔥 Recently Played
-            SizedBox(
-              height: 140,
-              child: ListView.builder(
-                scrollDirection: Axis.horizontal,
-                itemCount: mediaList.length,
-                itemBuilder: (_, i) {
-                  final item = mediaList[i];
-                  return GestureDetector(
-                    onTap: () => changeMedia(item),
-                    child: Container(
-                      width: 220,
-                      margin: EdgeInsets.only(left: 16),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        image: DecorationImage(
-                          image: AssetImage(item["thumb"]!),
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                      child: Center(
-                        child: Icon(
-                          Icons.play_circle_fill,
-                          color: Colors.white,
-                          size: 60,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-
-            SizedBox(height: 10),
-
-            // 🔥 Up Next
-            Expanded(
-              child: ListView.builder(
-                itemCount: mediaList.length,
-                itemBuilder: (_, i) {
-                  final item = mediaList[i];
-                  return GestureDetector(
-                    onTap: () => changeMedia(item),
-                    child: Container(
-                      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                      padding: EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: Colors.white10,
-                        borderRadius: BorderRadius.circular(15),
-                      ),
-                      child: Row(
-                        children: [
-                          Image.asset(
-                            item["thumb"]!,
-                            width: 80,
-                            height: 60,
-                            fit: BoxFit.cover,
-                          ),
-                          SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              item["title"]!,
-                              style: TextStyle(color: Colors.white),
-                            ),
-                          ),
-                          Icon(Icons.play_arrow, color: Colors.white),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
+            _topBar(),
+            if (_initialized && _controller != null) ...[
+              _videoArea(),
+              _controls(),
+            ] else ...[
+              _placeholder(),
+            ],
+            const Spacer(),
           ],
         ),
       ),
     );
+  }
+
+  Widget _topBar() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      child: Row(
+        children: [
+          IconButton(
+            icon: const Icon(
+              Icons.arrow_back_ios_new,
+              color: Colors.white,
+              size: 18,
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
+          Expanded(
+            child: Text(
+              widget.recording?.fileName ?? 'Player',
+              textAlign: TextAlign.center,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(width: 48),
+        ],
+      ),
+    );
+  }
+
+  Widget _videoArea() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        color: Colors.black,
+      ),
+      clipBehavior: Clip.hardEdge,
+      child: AspectRatio(
+        aspectRatio: _controller!.value.aspectRatio,
+        child: GestureDetector(
+          onTap: _togglePlay,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              VideoPlayer(_controller!),
+              if (!_isPlaying)
+                Container(
+                  width: 60,
+                  height: 60,
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.5),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.play_arrow,
+                    color: Colors.white,
+                    size: 36,
+                  ),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _controls() {
+    final position = _controller?.value.position ?? Duration.zero;
+    final duration = _controller?.value.duration ?? Duration.zero;
+    final maxSecs = duration.inSeconds.toDouble();
+    final posSecs = position.inSeconds.toDouble().clamp(
+      0,
+      maxSecs > 0 ? maxSecs : 1,
+    );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Column(
+        children: [
+          // Seek bar
+          SliderTheme(
+            data: SliderTheme.of(context).copyWith(
+              activeTrackColor: AppColors.cyanColor,
+              inactiveTrackColor: AppColors.cardBg,
+              thumbColor: AppColors.cyanColor,
+              thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
+              trackHeight: 3,
+              overlayShape: SliderComponentShape.noOverlay,
+            ),
+            child: Slider(
+              value: posSecs.toDouble(),
+              max: maxSecs > 0 ? maxSecs : 1,
+              onChanged: (v) =>
+                  _controller?.seekTo(Duration(seconds: v.toInt())),
+            ),
+          ),
+
+          // Time labels
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  _format(position),
+                  style: const TextStyle(
+                    color: AppColors.grayColor,
+                    fontSize: 12,
+                  ),
+                ),
+                Text(
+                  _format(duration),
+                  style: const TextStyle(
+                    color: AppColors.grayColor,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          const SizedBox(height: 8),
+
+          // Playback buttons
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _iconBtn(Icons.replay_10, () {
+                final pos =
+                    (_controller?.value.position ?? Duration.zero) -
+                    const Duration(seconds: 10);
+                _controller?.seekTo(pos < Duration.zero ? Duration.zero : pos);
+              }),
+              _playPauseBtn(),
+              _iconBtn(Icons.forward_10, () {
+                final pos =
+                    (_controller?.value.position ?? Duration.zero) +
+                    const Duration(seconds: 10);
+                _controller?.seekTo(pos);
+              }),
+            ],
+          ),
+
+          // File info
+          if (widget.recording != null) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppColors.secondBgColor,
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _infoChip(
+                    Icons.timer_outlined,
+                    widget.recording!.formattedDuration,
+                  ),
+                  _divider(),
+                  _infoChip(
+                    Icons.storage_outlined,
+                    widget.recording!.formattedSize,
+                  ),
+                  _divider(),
+                  _infoChip(
+                    Icons.access_time_outlined,
+                    widget.recording!.shortDate,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _playPauseBtn() {
+    return GestureDetector(
+      onTap: _togglePlay,
+      child: Container(
+        width: 64,
+        height: 64,
+        decoration: BoxDecoration(
+          color: AppColors.cyanColor,
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.cyanColor.withOpacity(0.35),
+              blurRadius: 16,
+            ),
+          ],
+        ),
+        child: Icon(
+          _isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+          color: Colors.black,
+          size: 34,
+        ),
+      ),
+    );
+  }
+
+  Widget _iconBtn(IconData icon, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 46,
+        height: 46,
+        decoration: BoxDecoration(
+          color: AppColors.cardBg,
+          shape: BoxShape.circle,
+        ),
+        child: Icon(icon, color: Colors.white, size: 22),
+      ),
+    );
+  }
+
+  Widget _infoChip(IconData icon, String label) {
+    return Row(
+      children: [
+        Icon(icon, color: AppColors.cyanColor, size: 14),
+        const SizedBox(width: 5),
+        Text(
+          label,
+          style: const TextStyle(
+            color: AppColors.whiteColor,
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _divider() =>
+      Container(width: 1, height: 16, color: AppColors.borderColor);
+
+  Widget _placeholder() {
+    return Expanded(
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.videocam_off_outlined,
+              color: AppColors.grayColor.withOpacity(0.4),
+              size: 64,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Video not available',
+              style: TextStyle(color: AppColors.grayColor, fontSize: 16),
+            ),
+            if (widget.recording != null) ...[
+              const SizedBox(height: 8),
+              Text(
+                widget.recording!.fileName,
+                style: const TextStyle(
+                  color: AppColors.grayColor,
+                  fontSize: 13,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _togglePlay() {
+    if (_controller == null) return;
+    setState(() {
+      _isPlaying ? _controller!.pause() : _controller!.play();
+    });
   }
 }
