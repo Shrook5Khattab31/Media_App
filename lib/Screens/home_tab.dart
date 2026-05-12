@@ -75,11 +75,11 @@ class HomeTab extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Welcome back,',
+                  'Welcome back',
                   style: TextStyle(color: AppColors.grayColor, fontSize: 13),
                 ),
                 const Text(
-                  'Alex Rivera',
+                  'User',
                   style: TextStyle(
                     color: AppColors.whiteColor,
                     fontSize: 17,
